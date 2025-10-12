@@ -163,10 +163,6 @@ _velero_ui_install() {
     --atomic --namespace "${VELERO_UI_NS}" \
     --create-namespace \
     -f - >/dev/null
-service:
-  type: ClusterIP
-  port: 3000
-
 ingress:
   enabled: true
   className: ${VELERO_UI_INGRESS_CLASS}
