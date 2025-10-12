@@ -86,21 +86,21 @@ quick-kind() {
             echo -e "${GREEN}✅ Root CA created: ${CA_CRT}${NC}"
         fi
         
-        if [[ -f /etc/os-release ]] && grep -qiE 'almalinux|rhel|centos|fedora' /etc/os-release; then
-            if command -v sudo >/dev/null 2>&1; then
-                local anchor="/etc/pki/ca-trust/source/anchors/quick-kind-rootCA.crt"
-                if ! sudo test -f "${anchor}" || ! cmp -s "${CA_CRT}" "${anchor}"; then
-                    echo -e "${YELLOW}🔗 Installing CA into system trust (AlmaLinux/RHEL/Fedora)...${NC}"
-                    sudo cp "${CA_CRT}" "${anchor}"
-                    sudo update-ca-trust extract
-                    echo -e "${GREEN}✅ System trust updated.${NC}"
-                else
-                    echo -e "${CYAN}🔗 CA already present in system trust.${NC}"
-                fi
-            else
-                echo -e "${BLUE}ℹ️ 'sudo' not found; skipping system trust install.${NC}"
-            fi
-        fi
+        # if [[ -f /etc/os-release ]] && grep -qiE 'almalinux|rhel|centos|fedora' /etc/os-release; then
+        #     if command -v sudo >/dev/null 2>&1; then
+        #         local anchor="/etc/pki/ca-trust/source/anchors/quick-kind-rootCA.crt"
+        #         if ! sudo test -f "${anchor}" || ! cmp -s "${CA_CRT}" "${anchor}"; then
+        #             echo -e "${YELLOW}🔗 Installing CA into system trust (AlmaLinux/RHEL/Fedora)...${NC}"
+        #             sudo cp "${CA_CRT}" "${anchor}"
+        #             sudo update-ca-trust extract
+        #             echo -e "${GREEN}✅ System trust updated.${NC}"
+        #         else
+        #             echo -e "${CYAN}🔗 CA already present in system trust.${NC}"
+        #         fi
+        #     else
+        #         echo -e "${BLUE}ℹ️ 'sudo' not found; skipping system trust install.${NC}"
+        #     fi
+        # fi
     }
     
     ensure_local_kind_registry() {
@@ -134,6 +134,7 @@ quick-kind() {
                 -e REGISTRY_PROXY_REMOTEURL="https://registry-1.docker.io" \
                 -e REGISTRY_PROXY_USERNAME="$USERNAME" \
                 -e REGISTRY_PROXY_PASSWORD="$PASSWORD" \
+                --network kind \
                 registry:2 >/dev/null
                 echo -e "${GREEN}✅ Docker Hub cache (authenticated) created.${NC}"
             else
@@ -141,6 +142,7 @@ quick-kind() {
                 --name "${DOCKERHUB_CACHE_NAME}" \
                 -p "5000:5000" \
                 -e REGISTRY_PROXY_REMOTEURL="https://registry-1.docker.io" \
+                --network kind \
                 registry:2 >/dev/null
                 echo -e "${GREEN}✅ Docker Hub cache (anonymous) created.${NC}"
             fi
@@ -156,6 +158,7 @@ quick-kind() {
             docker run -d --restart=always \
             --name "${QUAY_CACHE_NAME}" \
             -e REGISTRY_PROXY_REMOTEURL="https://quay.io" \
+            --network kind \
             registry:2 >/dev/null
         else
             echo -e "${CYAN}📦 quay cache already running.${NC}"
@@ -168,6 +171,7 @@ quick-kind() {
             docker run -d --restart=always \
             --name "${GHCR_CACHE_NAME}" \
             -e REGISTRY_PROXY_REMOTEURL="https://ghcr.io" \
+            --network kind \
             registry:2 >/dev/null
         else
             echo -e "${CYAN}📦 ghcr cache already running.${NC}"
@@ -180,23 +184,14 @@ quick-kind() {
             docker run -d --restart=always \
             --name "${MCR_CACHE_NAME}" \
             -e REGISTRY_PROXY_REMOTEURL="https://mcr.microsoft.com" \
+            --network kind \
             registry:2 >/dev/null
         else
             echo -e "${CYAN}📦 mcr cache already running.${NC}"
         fi
     }
     
-    connect_registries_to_kind_network() {
-        # Ensure a kind network exists (created automatically by kind; ok if missing until cluster exists)
-        if docker network inspect kind >/dev/null 2>&1; then
-            for c in "${LOCAL_REGISTRY_NAME}" "${DOCKERHUB_CACHE_NAME}" "${QUAY_CACHE_NAME}" "${GHCR_CACHE_NAME}" "${MCR_CACHE_NAME}"; do
-                if docker inspect "$c" >/dev/null 2>&1; then
-                    docker network connect kind "$c" >/dev/null 2>&1 || true
-                fi
-            done
-        fi
-    }
-    
+
     ensure_registry_k8s_config() {
         # Advertise local-registry in cluster per KIND docs
     kubectl apply -f - >/dev/null 2>&1 <<EOF
@@ -360,7 +355,6 @@ EOF
         setup_ghcr_pullthrough_cache
         setup_mcr_pullthrough_cache
         ensure_kind_cluster
-        connect_registries_to_kind_network
         configure_kind_nodes_for_local_registry
         ensure_registry_k8s_config
         ensure_cert_manager
@@ -375,7 +369,6 @@ EOF
         echo -e "${CYAN}- CA    -> ${CA_CRT}${NC}"
         echo -e "${CYAN}- Issuer-> ClusterIssuer \"${CA_ISSUER_NAME}\"${NC}"
         echo -e "${YELLOW}(use Ingress annotation: cert-manager.io/cluster-issuer: \"${CA_ISSUER_NAME}\")${NC}"
-        echo -e "${YELLOW}(to auth-rate-limit Docker Hub cache, export DOCKERHUB_USERNAME/DOCKERHUB_PASSWORD before running)${NC}"
     }
     
     case "${1:-}" in
