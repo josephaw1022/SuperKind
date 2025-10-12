@@ -10,8 +10,8 @@ RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[0;33m'; BLUE='\033[0;34m'; CY
 # ---- Config (override via env) ----
 # MinIO
 MINIO_NAME="${MINIO_NAME:-minio}"
-MINIO_HOST_PORT_S3="${MINIO_HOST_PORT_S3:-5000}"        # external port for MinIO S3 API
-MINIO_HOST_PORT_CONSOLE="${MINIO_HOST_PORT_CONSOLE:-5001}" # external port for MinIO Console
+MINIO_HOST_PORT_S3="${MINIO_HOST_PORT_S3:-5100}"        # external port for MinIO S3 API
+MINIO_HOST_PORT_CONSOLE="${MINIO_HOST_PORT_CONSOLE:-5101}" # external port for MinIO Console
 MINIO_ROOT_USER="${MINIO_ROOT_USER:-velero}"
 MINIO_ROOT_PASSWORD="${MINIO_ROOT_PASSWORD:-veleropass123}"
 VELERO_BUCKET="${VELERO_BUCKET:-velero}"
@@ -38,31 +38,41 @@ need() { command -v "$1" >/dev/null 2>&1 || { echo -e "${RED}❌ missing: $1${NC
 _minio_up() {
   need docker || return 1
 
+  if docker inspect "${MINIO_NAME}" >/dev/null 2>&1; then
+    if [ "$(docker inspect -f '{{.State.Running}}' "${MINIO_NAME}" 2>/dev/null || true)" != "true" ]; then
+      docker rm -f "${MINIO_NAME}" >/dev/null 2>&1 || true
+    fi
+  fi
+
   if [ "$(docker inspect -f '{{.State.Running}}' "${MINIO_NAME}" 2>/dev/null || true)" != "true" ]; then
-    echo -e "${YELLOW}📦 Starting MinIO (S3) on localhost:${MINIO_HOST_PORT_S3} / ${MINIO_HOST_PORT_CONSOLE} ...${NC}"
-    docker run -d --restart=always \
+    echo -e "${YELLOW}📦 Starting MinIO (S3) on ports ${MINIO_HOST_PORT_S3}/${MINIO_HOST_PORT_CONSOLE}...${NC}"
+    docker run -d --restart=unless-stopped \
       --name "${MINIO_NAME}" \
       --network "${KIND_NETWORK}" \
-      -p "127.0.0.1:${MINIO_HOST_PORT_S3}:9000" \
-      -p "127.0.0.1:${MINIO_HOST_PORT_CONSOLE}:9001" \
+      -v minio-data:/data \
+      -p "${MINIO_HOST_PORT_S3}:9000" \
+      -p "${MINIO_HOST_PORT_CONSOLE}:9001" \
       -e MINIO_ROOT_USER="${MINIO_ROOT_USER}" \
       -e MINIO_ROOT_PASSWORD="${MINIO_ROOT_PASSWORD}" \
-      quay.io/minio/minio server /data --console-address ":9001" >/dev/null
+      -e MINIO_ADDRESS=":9000" \
+      -e MINIO_CONSOLE_ADDRESS=":9001" \
+      quay.io/minio/minio server /data
   else
     echo -e "${CYAN}🗄️  MinIO already running.${NC}"
   fi
 
-  docker network connect "${KIND_NETWORK}" "${MINIO_NAME}" >/dev/null 2>&1 || true
-
   echo -e "${YELLOW}🪣 Ensuring bucket '${VELERO_BUCKET}' exists...${NC}"
   docker run --rm --network "${KIND_NETWORK}" \
     -e MC_HOST_minio="http://${MINIO_ROOT_USER}:${MINIO_ROOT_PASSWORD}@${MINIO_NAME}:9000" \
-    minio/mc mb -p "minio/${VELERO_BUCKET}" >/dev/null 2>&1 || true
+    quay.io/minio/mc mb -p "minio/${VELERO_BUCKET}"
 
   echo -e "${GREEN}✅ MinIO ready.${NC}"
   echo -e "${CYAN}🌍 Console: http://localhost:${MINIO_HOST_PORT_CONSOLE}${NC}"
   echo -e "${CYAN}📦 S3 API:  http://localhost:${MINIO_HOST_PORT_S3}${NC}"
 }
+
+
+
 
 _velero_install() {
   need kubectl || return 1
@@ -73,81 +83,115 @@ _velero_install() {
   helm repo update >/dev/null 2>&1 || true
   kubectl get ns "${VELERO_NS}" >/dev/null 2>&1 || kubectl create ns "${VELERO_NS}" >/dev/null
 
-  local aws_creds="[default]
-aws_access_key_id=${MINIO_ROOT_USER}
-aws_secret_access_key=${MINIO_ROOT_PASSWORD}
-"
+  echo -e "${CYAN}🔑 Creating cloud credentials secret...${NC}"
+  kubectl -n "${VELERO_NS}" delete secret cloud-credentials --ignore-not-found >/dev/null 2>&1
   kubectl -n "${VELERO_NS}" create secret generic cloud-credentials \
-    --from-literal=cloud="${aws_creds}" \
-    --dry-run=client -o yaml | kubectl apply -f - >/dev/null
+    --from-literal=cloud="[default]
+aws_access_key_id=${MINIO_ROOT_USER}
+aws_secret_access_key=${MINIO_ROOT_PASSWORD}" >/dev/null
 
   local verFlag=()
   [[ -n "$VELERO_CHART_VERSION" ]] && verFlag=(--version "$VELERO_CHART_VERSION")
 
-  helm upgrade --install velero vmware-tanzu/velero \
-    --namespace "${VELERO_NS}" \
+  echo -e "${YELLOW}📦 Installing Velero Helm chart...${NC}"
+  cat <<EOF | helm upgrade --install velero vmware-tanzu/velero \
+    --atomic --namespace "${VELERO_NS}" \
+    --create-namespace \
     "${verFlag[@]}" \
-    --set configuration.provider=aws \
-    --set credentials.existingSecret=cloud-credentials \
-    --set configuration.backupStorageLocation.name=default \
-    --set configuration.backupStorageLocation.bucket="${VELERO_BUCKET}" \
-    --set configuration.backupStorageLocation.config.region="${VELERO_REGION}" \
-    --set configuration.backupStorageLocation.config.s3ForcePathStyle=true \
-    --set configuration.backupStorageLocation.config.s3Url="http://${MINIO_NAME}:9000" \
-    --set configuration.volumeSnapshotLocation.name=default \
-    --set configuration.volumeSnapshotLocation.config.region="${VELERO_REGION}" \
-    --set "initContainers[0].name=velero-plugin-for-aws" \
-    --set "initContainers[0].image=${VELERO_AWS_PLUGIN_IMAGE}" \
-    --set "initContainers[0].volumeMounts[0].mountPath=/target" \
-    --set "initContainers[0].volumeMounts[0].name=plugins" >/dev/null
+    -f -
+credentials:
+  useSecret: true
+  existingSecret: cloud-credentials
+
+configuration:
+  backupStorageLocation:
+    - name: default
+      provider: aws
+      bucket: ${VELERO_BUCKET}
+      accessMode: ReadWrite
+      config:
+        region: ${VELERO_REGION}
+        s3ForcePathStyle: true
+        s3Url: http://${MINIO_NAME}:9000
+  volumeSnapshotLocation:
+    - name: default
+      provider: aws
+      config:
+        region: ${VELERO_REGION}
+
+initContainers:
+  - name: velero-plugin-for-aws
+    image: ${VELERO_AWS_PLUGIN_IMAGE}
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - name: plugins
+        mountPath: /target
+EOF
+
+
 
   echo -e "${BLUE}⏳ Waiting for Velero to be Ready...${NC}"
   kubectl -n "${VELERO_NS}" rollout status deploy/velero --timeout="${TIMEOUT}" >/dev/null 2>&1 || true
+
+  kubectl -n velero apply -f - <<'EOF'
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: hourly-all
+spec:
+  # Every hour at minute 0
+  schedule: "0 * * * *"
+  template:
+    ttl: 168h
+    storageLocation: default
+EOF
+
+
   echo -e "${GREEN}✅ Velero installed successfully.${NC}"
 }
 
+
 _velero_ui_install() {
   need helm || return 1
+
   echo -e "${YELLOW}🖥️  Installing Velero UI...${NC}"
   helm repo add otwld https://helm.otwld.com/ >/dev/null 2>&1 || true
   helm repo update >/dev/null 2>&1 || true
   kubectl get ns "${VELERO_UI_NS}" >/dev/null 2>&1 || kubectl create ns "${VELERO_UI_NS}" >/dev/null
 
-  helm upgrade --install velero-ui otwld/velero-ui \
-    --namespace "${VELERO_UI_NS}" >/dev/null
+  cat <<EOF | helm upgrade --install velero-ui otwld/velero-ui \
+    --atomic --namespace "${VELERO_UI_NS}" \
+    --create-namespace \
+    -f - >/dev/null
+service:
+  type: ClusterIP
+  port: 3000
 
-  echo -e "${YELLOW}🌐 Creating Ingress for Velero UI (https://${VELERO_UI_HOST})...${NC}"
-  cat <<EOF | kubectl apply -f - >/dev/null
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: velero-ui
-  namespace: ${VELERO_UI_NS}
+ingress:
+  enabled: true
+  className: ${VELERO_UI_INGRESS_CLASS}
   annotations:
     cert-manager.io/cluster-issuer: "${VELERO_UI_ISSUER}"
-spec:
-  ingressClassName: ${VELERO_UI_INGRESS_CLASS}
+  hosts:
+    - host: ${VELERO_UI_HOST}
+      paths:
+        - path: /
+          pathType: Prefix
   tls:
     - hosts:
         - ${VELERO_UI_HOST}
       secretName: ${VELERO_UI_TLS_SECRET}
-  rules:
-    - host: ${VELERO_UI_HOST}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: velero-ui
-                port:
-                  number: 80
+
+rbac:
+  create: true
+  clusterAdministrator: true
 EOF
 
   echo -e "${GREEN}✅ Velero UI installed.${NC}"
   echo -e "${CYAN}🔑 Default creds: admin / admin${NC}"
   echo -e "${CYAN}📍 URL: https://${VELERO_UI_HOST}${NC}"
 }
+
 
 velero_install() {
   _minio_up
@@ -176,9 +220,17 @@ velero_uninstall() {
   helm -n "${VELERO_NS}" uninstall velero >/dev/null 2>&1 || true
   kubectl -n "${VELERO_NS}" delete secret cloud-credentials --ignore-not-found >/dev/null 2>&1 || true
 
-  echo -e "${CYAN}ℹ️ MinIO container left running for reuse.${NC}"
-  echo -e "${GREEN}✅ Uninstall complete.${NC}"
+  echo -e "${YELLOW}🗑️  Deleting namespaces...${NC}"
+  kubectl delete ns "${VELERO_UI_NS}" --ignore-not-found >/dev/null 2>&1 || true
+  kubectl delete ns "${VELERO_NS}" --ignore-not-found >/dev/null 2>&1 || true
+
+  echo -e "${YELLOW}🛑 Removing MinIO container and volume...${NC}"
+  docker rm -f "${MINIO_NAME}" >/dev/null 2>&1 || true
+  docker volume rm -f minio-data >/dev/null 2>&1 || true
+
+  echo -e "${GREEN}✅ Uninstall complete. Everything cleaned up.${NC}"
 }
+
 
 velero_help() {
   echo -e "${BOLD}${CYAN}velero.sh${NC}"
