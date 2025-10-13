@@ -18,6 +18,28 @@ You get:
 
 ---
 
+## 🧰 Prerequisites
+
+Install these first:
+
+| Tool        | Description                    |
+| ----------- | ------------------------------ |
+| **Kind**    | Local Kubernetes in Docker     |
+| **Kubectl** | Kubernetes CLI                 |
+| **Helm**    | Package manager for Kubernetes |
+
+Verify:
+
+```bash
+kind version
+kubectl version --client
+helm version
+```
+
+**If you use Podman Desktop, then you can easily install all of these tools via the UI.**
+
+---
+
 ## 🚀 Quick Start
 
 ```bash
@@ -47,25 +69,7 @@ SuperKind bootstraps a local developer environment with:
 
 Each plugin adds specific functionality (OLM, Epinio, KEDA, Velero, etc.) for a richer local cluster experience.
 
----
 
-## 🧰 Prerequisites
-
-Install these first:
-
-| Tool        | Description                    |
-| ----------- | ------------------------------ |
-| **Kind**    | Local Kubernetes in Docker     |
-| **Kubectl** | Kubernetes CLI                 |
-| **Helm**    | Package manager for Kubernetes |
-
-Verify:
-
-```bash
-kind version
-kubectl version --client
-helm version
-```
 
 ---
 
