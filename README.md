@@ -1,6 +1,7 @@
 # 🧩 SuperKind — Local Kubernetes Pro Max
 
 **SuperKind** gives you the _convenience of using Kubernetes with Rancher Desktop or Docker Desktop_, but with the _flexibility of Kind_ — and more.
+
 You get:
 
 ✅ **Opinionated convenience** — preconfigured defaults, plugins, and quick-start tools
@@ -57,8 +58,16 @@ You’ll then have commands like:
 
 ```bash
 quick-kind --help
+# (alias: qk)
+
+qk # builds the kind cluster
 kind-plugin --help
 kind-plugin epinio install
+
+# ... 
+
+# Tears cluster down
+qk -d
 ```
 
 ---
