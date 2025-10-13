@@ -1,11 +1,13 @@
 # 🧩 SuperKind — Local Kubernetes Pro Max
 
-**SuperKind** gives you the *convenience of using Kubernetes with Rancher Desktop or Docker Desktop*, but with the *flexibility of Kind* — and more.
+**SuperKind** gives you the _convenience of using Kubernetes with Rancher Desktop or Docker Desktop_, but with the _flexibility of Kind_ — and more.
 You get:
 
 ✅ **Opinionated convenience** — preconfigured defaults, plugins, and quick-start tools
 
 ⚙️ **Full flexibility** — still 100% Kind underneath
+
+🧩 **Multi-node local clusters** — simulate realistic production topologies
 
 🪣 **Pull-through registry caching** — speed up local builds
 
@@ -13,12 +15,10 @@ You get:
 
 🔌 **Plugin-based extensibility** — `epinio`, `olm`, `keda`, `velero`, and more
 
-
-> **Note:** SuperKind isn’t a tool for *learning* Kubernetes — it’s built for people who already use Kind  
+> **Note:** SuperKind isn’t a tool for _learning_ Kubernetes — it’s built for people who already use Kind  
 > and are tired of re-writing the same setup scripts over and over.  
 > It automates all the repetitive parts of bootstrapping a serious Kind cluster  
 > with advanced features, plugins, and ready-to-use local infrastructure.
-
 
 ---
 
@@ -67,13 +67,11 @@ kind-plugin epinio install
 
 SuperKind bootstraps a local developer environment with:
 
-* **Kind**, **Helm**, and **Kubectl** prewired for local use
-* **Plugin scripts** under `~/.kind/plugin`
-* **Shell functions** auto-loaded from `~/.bashrc.d`
+- **Kind**, **Helm**, and **Kubectl** prewired for local use
+- **Plugin scripts** under `~/.kind/plugin`
+- **Shell functions** auto-loaded from `~/.bashrc.d`
 
 Each plugin adds specific functionality (OLM, Epinio, KEDA, Velero, etc.) for a richer local cluster experience.
-
-
 
 ---
 
@@ -111,8 +109,8 @@ Re-run anytime to refresh scripts:
 
 After setup:
 
-* `~/.bashrc.d` → Kind and plugin shell helpers
-* `~/.kind/plugin` → Modular plugins (`epinio`, `olm`, `keda`, etc.)
-* Kind, Helm, Kubectl ready for use
+- `~/.bashrc.d` → Kind and plugin shell helpers
+- `~/.kind/plugin` → Modular plugins (`epinio`, `olm`, `keda`, etc.)
+- Kind, Helm, Kubectl ready for use
 
 Spin up clusters, deploy workloads, and extend functionality — all locally and fast.
