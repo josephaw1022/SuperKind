@@ -242,6 +242,8 @@ nodes:
     hostPort: 443
     protocol: TCP
 - role: worker
+- role: worker
+- role: worker
 EOF
         else
             echo -e "${CYAN}… cluster already exists; skipping create.${NC}"
@@ -400,8 +402,13 @@ EOF
     case "${1:-}" in
         --help) show_help ;;
         --teardown) teardown ;;
+        -d) teardown ;;
+        --delete) teardown ;;
         --status) status ;;
         "") main ;;
         *) echo -e "${RED}❌ Unknown option: $1${NC}"; show_help; return 1 ;;
     esac
 }
+
+
+alias qk='quick-kind'
