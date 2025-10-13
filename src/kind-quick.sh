@@ -366,7 +366,7 @@ alertmanager:
   alertmanagerSpec: {}
 EOF
         
-        log "INFO" "kube-prometheus-stack installation complete"
+
     }
     
     
