@@ -16,6 +16,8 @@ You get:
 
 🔌 **Plugin-based extensibility** — `epinio`, `olm`, `keda`, `velero`, and more
 
+🧱 **Works with your setup** — runs great on Docker Desktop and Podman Desktop
+
 > **Note:** SuperKind isn’t a tool for _learning_ Kubernetes — it’s built for people who already use Kind  
 > and are tired of re-writing the same setup scripts over and over.  
 > It automates all the repetitive parts of bootstrapping a serious Kind cluster  
