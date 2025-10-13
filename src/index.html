@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Fallback UI • SuperKind</title>
+  </head>
+  <body class="bg-[#F5FAFA] text-[#1A1F21] font-[system-ui,-apple-system,Segoe_UI,Roboto,Inter,Arial,sans-serif] min-h-screen flex items-center justify-center p-8">
+    <main class="max-w-5xl w-full bg-white rounded-2xl border border-[#E3E8EA] shadow-lg p-10 space-y-8">
+      <header>
+        <h1 class="text-4xl font-semibold mb-1 text-[#0F6A6D]">Welcome to SuperKind 🌱</h1>
+        <p class="text-[#4A585C]">Your local Kind cluster is up and running. Deploy your applications and update their Ingress when ready.</p>
+      </header>
+
+      <section class="grid md:grid-cols-2 gap-6">
+        <div class="p-6 bg-[#F8FDFD] border border-[#E3E8EA] rounded-xl">
+          <h2 class="text-lg font-semibold mb-2 text-[#F26B21]">📦 Push an image to your local Zot registry</h2>
+          <p class="text-sm mb-3 text-[#4A585C]">
+            Zot docs: <a href="https://zotregistry.dev/v2.1.8/" target="_blank" rel="noopener" class="text-[#0F6A6D] hover:underline">zotregistry.dev v2.1.8</a><br>
+            Local registry: <a href="http://localhost:5001/" target="_blank" rel="noopener" class="text-[#0F6A6D] hover:underline">http://localhost:5001/</a>
+          </p>
+          <pre class="bg-[#F2F7F7] border border-[#D5E1E1] rounded-lg p-3 text-sm overflow-auto"><code># Build your image
+docker build -t myapp:latest .
+
+# Tag for local Zot (port 5001 maps to internal 5000)
+docker tag myapp:latest localhost:5001/myorg/myapp:latest
+
+# Push to Zot
+docker push localhost:5001/myorg/myapp:latest
+
+# Pull it back (optional)
+docker pull localhost:5001/myorg/myapp:latest</code></pre>
+          <p class="text-xs text-[#6C7B7F] mt-3">Your Kind nodes are already configured to mirror <code>localhost:5001</code>.</p>
+        </div>
+
+        <div class="p-6 bg-[#F8FDFD] border border-[#E3E8EA] rounded-xl">
+          <h2 class="text-lg font-semibold mb-2 text-[#F26B21]">🌐 Example Ingress (nginx + *.localhost)</h2>
+          <p class="text-sm mb-2 text-[#4A585C]">Use <code>ingressClassName: nginx</code> and a host under <code>*.localhost</code> with TLS:</p>
+          <pre class="bg-[#F2F7F7] border border-[#D5E1E1] rounded-lg p-3 text-sm overflow-auto"><code>apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp
+  namespace: default
+  annotations:
+    cert-manager.io/cluster-issuer: "quick-kind-ca"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: app.localhost
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: myapp
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - app.localhost
+    secretName: app-localhost-tls</code></pre>
+          <p class="text-xs text-[#6C7B7F] mt-3">TLS is automatically signed by your local <code>quick-kind-ca</code> ClusterIssuer.</p>
+        </div>
+      </section>
+
+      <section class="p-6 bg-[#F8FDFD] border border-[#E3E8EA] rounded-xl">
+        <h2 class="text-lg font-semibold mb-3 text-[#F26B21]">🧩 SuperKind Quick Reference</h2>
+        <ul class="list-disc list-inside text-sm text-[#4A585C] space-y-1">
+          <li>Repo: <a href="https://github.com/josephaw1022/SuperKind" target="_blank" rel="noopener" class="text-[#0F6A6D] hover:underline">github.com/josephaw1022/SuperKind</a></li>
+          <li>Scripts install to <code>~/.bashrc.d</code> and <code>~/.kind/</code></li>
+          <li>Local CA + registries auto-configured automatically</li>
+        </ul>
+
+        <div class="mt-4">
+          <h3 class="font-semibold text-sm text-[#0F6A6D] mb-1">Common Commands:</h3>
+          <pre class="bg-[#F2F7F7] border border-[#D5E1E1] rounded-lg p-3 text-sm overflow-auto"><code># Create or start the cluster
+qk up
+
+# Show cluster status
+qk status
+
+# Delete cluster
+qk --teardown
+
+# List all SuperKind clusters
+qk --list</code></pre>
+        </div>
+
+        <div class="mt-4">
+          <h3 class="font-semibold text-sm text-[#0F6A6D] mb-1">Available Plugins:</h3>
+          <pre class="bg-[#F2F7F7] border border-[#D5E1E1] rounded-lg p-3 text-sm overflow-auto"><code>Usage: kind-plugin &lt;plugin&gt; [command] [args...]
+
+Available plugins:
+  - epinio
+  - eso
+  - keda
+  - metrics-server
+  - olm
+  - tekton
+  - velero
+
+Examples:
+  kind-plugin epinio install
+  kind-plugin olm status</code></pre>
+        </div>
+      </section>
+
+      <footer class="pt-4 border-t border-[#E3E8EA] text-xs text-[#6C7B7F]">
+        Served by <code>nginx</code> from ConfigMap <code>fallback-ui-html</code>. Customize this page in <code>~/.kind/index.html</code>.
+      </footer>
+    </main>
+  </body>
+</html>

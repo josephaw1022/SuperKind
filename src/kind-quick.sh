@@ -11,7 +11,80 @@ quick-kind() {
     local BOLD='\033[1m'
     local NC='\033[0m' # No Color
     
-    local CLUSTER_NAME="${CLUSTER_NAME:-quick-cluster}"
+    # Defaults
+    local NAME_PREFIX="${NAME_PREFIX:-qk-}"
+    local DEFAULT_BASE_NAME="${DEFAULT_BASE_NAME:-quick-cluster}"
+    local CLUSTER_NAME="${CLUSTER_NAME:-${NAME_PREFIX}${DEFAULT_BASE_NAME}}"
+    local CUSTOM_NAME=""
+    local ACTION=""   # "", "status", "up", "delete", "list", "help"
+    
+    # ---------- Arg parsing ----------
+    # Default behavior: show status when no explicit action given
+    # Subcommands: up | status
+    # Flags: -d|--delete|--teardown ; --status ; -n|--name <val>
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            up)
+                ACTION="up"; shift
+            ;;
+            status|--status)
+                ACTION="status"; shift
+                # Optional trailing name for status
+                if [[ -n "${1:-}" && "${1:0:1}" != "-" ]]; then
+                    CUSTOM_NAME="qk-$1"; shift
+                fi
+            ;;
+            --teardown|--delete|-d)
+                ACTION="delete"; shift
+                # Optional trailing name for delete
+                if [[ -n "${1:-}" && "${1:0:1}" != "-" ]]; then
+                    CUSTOM_NAME="qk-$1"; shift
+                fi
+            ;;
+            --name|-n)
+                shift
+                if [[ -z "${1:-}" ]]; then
+                    echo -e "${RED}❌ Missing name after --name/-n${NC}"
+                    return 1
+                fi
+                CUSTOM_NAME="qk-$1"; shift
+            ;;
+            -l|--list)
+                ACTION="list"; shift
+            ;;
+            --help|-h)
+                ACTION="help"; shift
+            ;;
+            *)
+                # If token is a bare name after an action, treat as name.
+                if [[ -z "$ACTION" || "$ACTION" == "status" || "$ACTION" == "delete" || "$ACTION" == "up" ]]; then
+                    if [[ "${1:0:1}" != "-" ]]; then
+                        CUSTOM_NAME="qk-$1"; shift
+                    else
+                        echo -e "${RED}❌ Unknown option: $1${NC}"
+                        show_help
+                        return 1
+                    fi
+                else
+                    echo -e "${RED}❌ Unknown argument: $1${NC}"
+                    show_help
+                    return 1
+                fi
+            ;;
+        esac
+    done
+    
+    # Default action is status when nothing specified
+    if [[ -z "$ACTION" ]]; then
+        ACTION="status"
+    fi
+    
+    # Apply custom cluster name if provided
+    if [[ -n "$CUSTOM_NAME" ]]; then
+        CLUSTER_NAME="$CUSTOM_NAME"
+    fi
+    
+    # Paths / config
     local CA_DIR="${CA_DIR:-$HOME/.local/share/quick-kind/ca}"
     local CA_KEY="${CA_KEY:-$CA_DIR/rootCA.key}"
     local CA_CRT="${CA_CRT:-$CA_DIR/rootCA.crt}"
@@ -30,19 +103,37 @@ quick-kind() {
     need() { command -v "$1" >/dev/null 2>&1 || { echo -e "${RED}❌ missing dependency: $1${NC}"; return 1; }; }
     
     show_help() {
-        echo -e "${BOLD}${CYAN}Usage: quick-kind [option]${NC}"
+        echo -e "${BOLD}${CYAN}Usage:${NC} quick-kind [subcommand] [options] [name]"
+        echo
+        echo -e "${BOLD}Default:${NC}"
+        echo -e "  ${GREEN}qk${NC}                     Show status for default cluster (${BOLD}${NAME_PREFIX}${DEFAULT_BASE_NAME}${NC})"
+        echo
+        echo -e "${BOLD}Create:${NC}"
+        echo -e "  ${GREEN}qk up${NC}                  Create default cluster"
+        echo -e "  ${GREEN}qk up -n foo${NC}           Create ${BOLD}${NAME_PREFIX}foo${NC}"
+        echo -e "  ${GREEN}qk up foo${NC}              Create ${BOLD}${NAME_PREFIX}foo${NC}"
+        echo
+        echo -e "${BOLD}Status:${NC}"
+        echo -e "  ${GREEN}qk status${NC}              Status for default cluster"
+        echo -e "  ${GREEN}qk status -n foo${NC}       Status for ${BOLD}${NAME_PREFIX}foo${NC}"
+        echo -e "  ${GREEN}qk status foo${NC}          Status for ${BOLD}${NAME_PREFIX}foo${NC}"
+        echo
+        echo -e "${BOLD}Delete:${NC}"
+        echo -e "  ${GREEN}qk -d${NC}                  Delete ${BOLD}${NAME_PREFIX}${DEFAULT_BASE_NAME}${NC}"
+        echo -e "  ${GREEN}qk -d foo${NC}              Delete ${BOLD}${NAME_PREFIX}foo${NC}"
+        echo
+        echo -e "${BOLD}List:${NC}"
+        echo -e "  ${GREEN}qk -l${NC}  or  ${GREEN}qk --list${NC}   List all ${BOLD}${NAME_PREFIX}*${NC} clusters"
         echo
         echo -e "${BOLD}Options:${NC}"
-        echo -e "  ${GREEN}--help${NC}        Show this help message"
-        echo -e "  ${GREEN}--status${NC}      Show Kind cluster and Helm chart status"
-        echo -e "  ${GREEN}--teardown${NC}    Delete Kind cluster"
-        echo -e "  ${GREEN}(no args)${NC}     Create Kind cluster + local registries + cert-manager + ingress-nginx"
+        echo -e "  ${GREEN}-n, --name <n>${NC}         Use cluster name ${BOLD}${NAME_PREFIX}<n>${NC}"
+        echo -e "  ${GREEN}-h, --help${NC}             Show this help"
     }
+    
     
     teardown() {
         echo -e "${YELLOW}🧹 Deleting kind cluster '${CLUSTER_NAME}'...${NC}"
         kind delete cluster --name "${CLUSTER_NAME}" || echo -e "${YELLOW}Cluster not found${NC}"
-        # Leave caches/registry running so layers stay warm; comment out below if you want them gone.
         echo -e "${CYAN}ℹ️ Leaving local registry & caches running (for speed).${NC}"
         echo -e "${GREEN}🧼 Cleanup complete.${NC}"
     }
@@ -50,6 +141,7 @@ quick-kind() {
     status() {
         if ! kind get clusters 2>/dev/null | grep -qx "${CLUSTER_NAME}"; then
             echo -e "${RED}❌ Kind cluster '${CLUSTER_NAME}' not found.${NC}"
+            echo -e "${YELLOW}Hint:${NC} run ${BOLD}qk up${NC} or ${BOLD}qk up -n <name>${NC}"
             return 1
         fi
         echo -e "${GREEN}✅ Kind cluster '${CLUSTER_NAME}' is running.${NC}"
@@ -85,35 +177,21 @@ quick-kind() {
             chmod 600 "${CA_KEY}"
             echo -e "${GREEN}✅ Root CA created: ${CA_CRT}${NC}"
         fi
-        
-        # if [[ -f /etc/os-release ]] && grep -qiE 'almalinux|rhel|centos|fedora' /etc/os-release; then
-        #     if command -v sudo >/dev/null 2>&1; then
-        #         local anchor="/etc/pki/ca-trust/source/anchors/quick-kind-rootCA.crt"
-        #         if ! sudo test -f "${anchor}" || ! cmp -s "${CA_CRT}" "${anchor}"; then
-        #             echo -e "${YELLOW}🔗 Installing CA into system trust (AlmaLinux/RHEL/Fedora)...${NC}"
-        #             sudo cp "${CA_CRT}" "${anchor}"
-        #             sudo update-ca-trust extract
-        #             echo -e "${GREEN}✅ System trust updated.${NC}"
-        #         else
-        #             echo -e "${CYAN}🔗 CA already present in system trust.${NC}"
-        #         fi
-        #     else
-        #         echo -e "${BLUE}ℹ️ 'sudo' not found; skipping system trust install.${NC}"
-        #     fi
-        # fi
     }
     
     ensure_local_kind_registry() {
         if [ "$(docker inspect -f '{{.State.Running}}' "${LOCAL_REGISTRY_NAME}" 2>/dev/null || true)" != "true" ]; then
-            echo -e "${YELLOW}🗄️  creating local registry (push/pull) on localhost:${LOCAL_REGISTRY_HOST_PORT}...${NC}"
+            echo -e "${YELLOW}🗄️  creating local Zot registry (push/pull + ORAS) on localhost:${LOCAL_REGISTRY_HOST_PORT}...${NC}"
             docker run -d --restart=always \
             --name "${LOCAL_REGISTRY_NAME}" \
-            -p "127.0.0.1:${LOCAL_REGISTRY_HOST_PORT}:5000" \
-            registry:2 >/dev/null
+            -p "${LOCAL_REGISTRY_HOST_PORT}:5000" \
+            ghcr.io/project-zot/zot-linux-amd64:latest >/dev/null
+            echo -e "${GREEN}✅ Zot registry started as '${LOCAL_REGISTRY_NAME}' (${CYAN}localhost:${LOCAL_REGISTRY_HOST_PORT}${GREEN})${NC}"
         else
-            echo -e "${CYAN}🗄️  local registry already running.${NC}"
+            echo -e "${CYAN}🗄️  local Zot registry already running.${NC}"
         fi
     }
+    
     
     setup_dockerhub_pullthrough_cache() {
         if [ "$(docker inspect -f '{{.State.Running}}' "${DOCKERHUB_CACHE_NAME}" 2>/dev/null || true)" != "true" ]; then
@@ -150,7 +228,6 @@ quick-kind() {
             echo -e "${CYAN}📦 dockerhub cache already running.${NC}"
         fi
     }
-    
     
     setup_quay_pullthrough_cache() {
         if [ "$(docker inspect -f '{{.State.Running}}' "${QUAY_CACHE_NAME}" 2>/dev/null || true)" != "true" ]; then
@@ -191,10 +268,8 @@ quick-kind() {
         fi
     }
     
-    
     ensure_registry_k8s_config() {
-        # Advertise local-registry in cluster per KIND docs
-    kubectl apply -f - >/dev/null 2>&1 <<EOF
+        kubectl apply -f - >/dev/null 2>&1 <<EOF
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -214,7 +289,6 @@ EOF
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 
-# Pre-wire containerd mirrors to our local registry & caches
 containerdConfigPatches:
   - |-
     [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${LOCAL_REGISTRY_HOST_PORT}"]
@@ -250,16 +324,13 @@ EOF
         fi
     }
     
-    # For clusters created earlier WITHOUT patches, write hosts.toml post-hoc (safe to re-run)
     configure_kind_nodes_for_local_registry() {
         for node in $(kind get nodes --name "$CLUSTER_NAME" 2>/dev/null); do
             echo -e "${BLUE}🔧 patching containerd mirrors on ${node}${NC}"
-            
             docker exec "$node" mkdir -p /etc/containerd/certs.d/localhost:${LOCAL_REGISTRY_HOST_PORT}
       docker exec -i "$node" bash -c "cat > /etc/containerd/certs.d/localhost:${LOCAL_REGISTRY_HOST_PORT}/hosts.toml" <<EON
 [host."http://${LOCAL_REGISTRY_NAME}:5000"]
 EON
-            
             for pair in \
             "docker.io ${DOCKERHUB_CACHE_NAME}" \
             "quay.io ${QUAY_CACHE_NAME}" \
@@ -271,11 +342,31 @@ EON
 [host."http://$2:5000"]
 EON
             done
-            
-            # reload containerd (kind nodes use systemd)
-            # docker exec "$node" bash -lc 'systemctl restart containerd' >/dev/null 2>&1 || true
         done
     }
+    
+    
+    list_clusters() {
+        local prefix="${NAME_PREFIX}"
+        local all
+        all="$(kind get clusters 2>/dev/null || true)"
+        
+        echo -e "${BLUE}📚 SuperKind clusters (prefixed '${prefix}'):${NC}"
+        if [[ -z "$all" ]]; then
+            echo -e "${YELLOW}(none found)${NC}"
+            return 0
+        fi
+        
+        local filtered
+        filtered="$(printf "%s\n" "$all" | grep -E "^${prefix}" || true)"
+        if [[ -z "$filtered" ]]; then
+            echo -e "${YELLOW}(none found)${NC}"
+            return 0
+        fi
+        
+        printf "%s\n" "$filtered" | sort
+    }
+    
     
     ensure_cert_manager() {
         if helm status cert-manager -n cert-manager >/dev/null 2>&1; then
@@ -345,29 +436,63 @@ EOF
         kubectl rollout status deploy/ingress-nginx-controller -n ingress-nginx --timeout=300s || true
     }
     
-    
     install_prometheus_stack() {
         echo "INFO" "Installing kube-prometheus-stack into kube-system"
         echo "Installing kube-prometheus-stack into kube-system..."
         
         helm repo add prometheus-community https://prometheus-community.github.io/helm-charts >/dev/null 2>&1 || true
         helm repo update >/dev/null 2>&1 || true
-        
-        helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
-        -n kube-system \
-        --version 77.13.0 \
-        --atomic \
-        --create-namespace \
-    -f /dev/stdin <<EOF
+        # Check if prometheus is already installed
+        if helm status prometheus -n kube-system >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ kube-prometheus-stack already installed; skipping.${NC}"
+        else
+            helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
+            -n kube-system \
+            --version 77.13.0 \
+            --atomic \
+            --create-namespace \
+            -f /dev/stdin <<EOF
 prometheus:
-  prometheusSpec: {}
+    prometheusSpec: {}
 
 alertmanager:
-  alertmanagerSpec: {}
+    alertmanagerSpec: {}
 EOF
-        
-
+        fi
     }
+    
+    apply_fallback_yaml() {
+        local YAML="${HOME}/.kind/fallback.yaml"
+        local HTML="${HOME}/.kind/index.html"
+        
+        echo "🪶 Applying fallback UI manifest..."
+        
+        # Ensure namespace exists
+        kubectl get ns fallback-ui >/dev/null 2>&1 || kubectl create ns fallback-ui
+        
+        # Ensure HTML exists
+        if [[ ! -f "${HTML}" ]]; then
+            echo "❌ Missing ${HTML}. Re-run configure-scripts.sh to install it."
+            return 1
+        fi
+        
+        # Create/Update ConfigMap from file (idempotent)
+        kubectl -n fallback-ui create configmap fallback-ui-html \
+        --from-file=index.html="${HTML}" \
+        -o yaml --dry-run=client | kubectl apply -f -
+        
+        # Apply remaining resources (Deployment/Service/Ingress)
+        if [[ -f "${YAML}" ]]; then
+            kubectl apply -f "${YAML}"
+        else
+            echo "ℹ️  ${YAML} not found; only the ConfigMap was applied."
+        fi
+        
+        # Wait for rollout and show endpoints
+        kubectl -n fallback-ui rollout status deploy/fallback-ui --timeout=180s || true
+        kubectl -n fallback-ui get svc,ingress || true
+    }
+    
     
     
     main() {
@@ -379,8 +504,8 @@ EOF
         ensure_local_kind_registry
         setup_dockerhub_pullthrough_cache
         setup_quay_pullthrough_cache
-        setup_ghcr_pullthrough_cache
-        setup_mcr_pullthrough_cache
+        setup_ghCR_pullthrough_cache 2>/dev/null || setup_ghcr_pullthrough_cache   # tolerate minor aliasing
+        setup_mCR_pullthrough_cache 2>/dev/null || setup_mcr_pullthrough_cache
         ensure_kind_cluster
         configure_kind_nodes_for_local_registry
         ensure_registry_k8s_config
@@ -388,27 +513,28 @@ EOF
         ensure_cert_manager
         ensure_ca_secret_and_issuer
         ensure_ingress_nginx
+        apply_fallback_yaml
         
         echo -e "${GREEN}✅ done.${NC}"
+        echo -e "${CYAN}- Cluster -> ${CLUSTER_NAME}${NC}"
         echo -e "${CYAN}- HTTP  -> http://localhost${NC}"
         echo -e "${CYAN}- HTTPS -> https://localhost${NC}"
         echo -e "${CYAN}- Local registry -> localhost:${LOCAL_REGISTRY_HOST_PORT}${NC}"
         echo -e "${CYAN}- Mirrors -> docker.io, quay.io, ghcr.io, mcr.microsoft.com via caches${NC}"
         echo -e "${CYAN}- CA    -> ${CA_CRT}${NC}"
         echo -e "${CYAN}- Issuer-> ClusterIssuer \"${CA_ISSUER_NAME}\"${NC}"
-        echo -e "${YELLOW}(use Ingress annotation: cert-manager.io/cluster-issuer: \"${CA_ISSUER_NAME}\")${NC}"
+        echo -e "${YELLOW}(Ingress annotation: cert-manager.io/cluster-issuer: \"${CA_ISSUER_NAME}\")${NC}"
     }
     
-    case "${1:-}" in
-        --help) show_help ;;
-        --teardown) teardown ;;
-        -d) teardown ;;
-        --delete) teardown ;;
-        --status) status ;;
-        "") main ;;
-        *) echo -e "${RED}❌ Unknown option: $1${NC}"; show_help; return 1 ;;
+    case "${ACTION}" in
+        help)   show_help ;;
+        status) status ;;
+        up)     main ;;
+        delete) teardown ;;
+        list)   list_clusters ;;
+        *)      echo -e "${RED}❌ Unknown action${NC}"; show_help; return 1 ;;
     esac
+    
 }
-
 
 alias qk='quick-kind'
