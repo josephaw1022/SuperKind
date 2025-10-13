@@ -4,9 +4,13 @@
 You get:
 
 ✅ **Opinionated convenience** — preconfigured defaults, plugins, and quick-start tools
+
 ⚙️ **Full flexibility** — still 100% Kind underneath
+
 🪣 **Pull-through registry caching** — speed up local builds
+
 📦 **Local registry integration** — push/pull without Docker Hub throttling
+
 🔌 **Plugin-based extensibility** — `epinio`, `olm`, `keda`, `velero`, and more
 
 
