@@ -12,11 +12,14 @@ You get:
 
 🪣 **Pull-through registry caching** — speed up local builds and avoid repeated remote pulls.
 
-📦 **Local registry integration** — push and pull without Docker Hub throttling.
+📦 **Local registry integration** — powered by a local **Zot** registry for fast, reliable image pushes and pulls without Docker Hub throttling.
 
 🔌 **Plugin-based extensibility** — add things like `epinio`, `olm`, `keda`, `velero`, or anything Helm-based.
 
+🌐 **Fallback UI** — automatically serves a friendly web landing page for any unmatched Ingress host on localhost and *.localhost.
+
 🧱 **Works anywhere** — runs seamlessly with Docker Desktop and Podman Desktop. Users using Rancher Desktop on Windows may have issues running Kind in general so this may not work.
+
 
 > **SuperKind** is designed for developers who already use Kind, but want a smarter, faster local setup — with CA trust, ingress, registry caching, metrics, cert-manager, and more baked in.
 
