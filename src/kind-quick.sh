@@ -191,7 +191,7 @@ quick-kind() {
         fi
     }
     
-
+    
     ensure_registry_k8s_config() {
         # Advertise local-registry in cluster per KIND docs
     kubectl apply -f - >/dev/null 2>&1 <<EOF
@@ -343,6 +343,31 @@ EOF
         kubectl rollout status deploy/ingress-nginx-controller -n ingress-nginx --timeout=300s || true
     }
     
+    
+    install_prometheus_stack() {
+        echo "INFO" "Installing kube-prometheus-stack into kube-system"
+        echo "Installing kube-prometheus-stack into kube-system..."
+        
+        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts >/dev/null 2>&1 || true
+        helm repo update >/dev/null 2>&1 || true
+        
+        helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
+        -n kube-system \
+        --version 77.13.0 \
+        --atomic \
+        --create-namespace \
+    -f /dev/stdin <<EOF
+prometheus:
+  prometheusSpec: {}
+
+alertmanager:
+  alertmanagerSpec: {}
+EOF
+        
+        log "INFO" "kube-prometheus-stack installation complete"
+    }
+    
+    
     main() {
         need kind || return 1
         need kubectl || return 1
@@ -357,6 +382,7 @@ EOF
         ensure_kind_cluster
         configure_kind_nodes_for_local_registry
         ensure_registry_k8s_config
+        install_prometheus_stack
         ensure_cert_manager
         ensure_ca_secret_and_issuer
         ensure_ingress_nginx
