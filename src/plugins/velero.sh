@@ -126,6 +126,12 @@ initContainers:
     volumeMounts:
       - name: plugins
         mountPath: /target
+
+kubectl:
+  image:
+    repository: docker.io/bitnamilegacy/kubectl
+    tag: "1.33.4"
+
 EOF
 
 
