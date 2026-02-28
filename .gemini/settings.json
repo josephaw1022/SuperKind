@@ -15,6 +15,7 @@
         "usageStatisticsEnabled": false
     },
     "ui": {
-        "inlineThinkingMode": "full"
+        "inlineThinkingMode": "full",
+        "showCitations": true
     }
 }
