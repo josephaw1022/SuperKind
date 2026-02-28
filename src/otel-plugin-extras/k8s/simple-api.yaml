@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring-example
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-api
+  namespace: monitoring-example
+  labels:
+    app: simple-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-api
+  template:
+    metadata:
+      labels:
+        app: simple-api
+    spec:
+      containers:
+        - name: simple-api
+          image: docker.io/josephaw1022/simpleapi:v1.0.3
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://0.0.0.0:8080
+          volumeMounts:
+            - name: appsettings
+              mountPath: /app/appsettings.json
+              subPath: appsettings.json
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /alive
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 2
+            failureThreshold: 3
+      volumes:
+        - name: appsettings
+          configMap:
+            name: simple-api-appsettings
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-api
+  namespace: monitoring-example
+  labels:
+    app: simple-api
+spec:
+  type: ClusterIP
+  selector:
+    app: simple-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: simple-api
+  namespace: monitoring-example
+  annotations:
+    cert-manager.io/cluster-issuer: quick-kind-ca
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - simple-api.localhost
+      secretName: simple-api-tls
+  rules:
+    - host: simple-api.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: simple-api
+                port:
+                  number: 80
