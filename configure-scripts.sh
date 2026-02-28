@@ -16,6 +16,12 @@ cp -f "${SRC_DIR}/plugins/"*.sh "${KIND_PLUGIN_DIR}/"
 cp -f "${SRC_DIR}/fallback.yaml" "${KIND_DIR}/"
 cp -f "${SRC_DIR}/index.html" "${KIND_DIR}/index.html"
 
+# copy the ./src/otel-plugin-extras directory if it exists to ~/.kind/otel-plugin-extras
+if [ -d "${SRC_DIR}/otel-plugin-extras" ]; then
+    echo "📁 Copying otel-plugin-extras directory..."
+    cp -r "${SRC_DIR}/otel-plugin-extras" "${KIND_DIR}/otel-plugin-extras"
+fi
+
 echo "🔒 Making everything executable..."
 chmod +x "${BASHRC_D}"/*.sh "${KIND_PLUGIN_DIR}"/*.sh
 chmod 644 "${KIND_DIR}/fallback.yaml"

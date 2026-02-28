@@ -1,0 +1,52 @@
+version: '3'
+
+env:
+  CONTAINER_REPOSITORY: josephaw1022/simpleapi
+  CONTAINER_IMAGE_TAG: v1.0.3
+
+tasks:
+  default:
+    desc: List all available tasks
+    summary: Displays all tasks in this Taskfile
+    cmds:
+      - task --list-all
+
+  watch:
+    dir: simple-api
+    desc: Run the SimpleApi project with dotnet watch
+    summary: Starts dotnet watch in the simple-api directory
+    cmds:
+      - dotnet watch
+
+  build:
+    dir: simple-api
+    desc: Build the SimpleApi project using the .NET CLI
+    summary: Builds the SimpleApi project
+    cmds:
+      - dotnet build
+
+  build-image:
+    dir: simple-api
+    desc: Build the SimpleApi container image using the .NET CLI
+    summary: Builds a container image of the SimpleApi project
+    cmds:
+      - dotnet publish -t:PublishContainer -p:ContainerRepository=${CONTAINER_REPOSITORY} -p:ContainerImageTag=${CONTAINER_IMAGE_TAG}
+      - docker push ${CONTAINER_REPOSITORY}:${CONTAINER_IMAGE_TAG}
+
+  load-image-to-kind-cluster:
+    dir: simple-api
+    desc: Load the SimpleApi container image into the local kind cluster
+    summary: Loads the SimpleApi container image into kind
+    env:
+      KIND_CLUSTER_NAME: qk-quick-cluster
+    cmds:
+      - kind load docker-image ${CONTAINER_REPOSITORY}:${CONTAINER_IMAGE_TAG} --name ${KIND_CLUSTER_NAME}
+
+  deploy-to-kind-cluster:
+    dir: k8s
+    desc: Deploy the SimpleApi application to the local kind cluster
+    summary: Applies the Kubernetes manifests to the kind cluster
+    env:
+      KUBECTL_CONTEXT: kind-qk-quick-cluster
+    cmds:
+      - kubectl apply -k . --context ${KUBECTL_CONTEXT}
