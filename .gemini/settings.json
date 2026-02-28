@@ -1,0 +1,21 @@
+{
+    "experimental": {
+        "plan": true,
+        "enableSubAgents": true,
+        "modelSteering": true
+    },
+    "general": {
+        "defaultApprovalMode": "plan",
+        "checkpointing": {
+            "enabled": true
+        },
+        "vimMode": true
+    },
+    "privacy": {
+        "usageStatisticsEnabled": false
+    },
+    "ui": {
+        "inlineThinkingMode": "full",
+        "showCitations": true
+    }
+}
