@@ -10,6 +10,7 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/storage/driver"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -141,8 +142,6 @@ func EnsurePrometheusStack() error {
 func RunHelmInstall(releaseName, chartName, repoURL, version string, values map[string]interface{}) error {
 	settings := cli.New()
 
-	actionConfig := new(action.Configuration)
-	
 	namespace := settings.Namespace()
 	if releaseName == "cert-manager" {
 		namespace = "cert-manager"
@@ -154,6 +153,7 @@ func RunHelmInstall(releaseName, chartName, repoURL, version string, values map[
 		namespace = "kube-system"
 	}
 
+	actionConfig := new(action.Configuration)
 	if err := actionConfig.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), log.Printf); err != nil {
 		return err
 	}
@@ -167,29 +167,39 @@ func RunHelmInstall(releaseName, chartName, repoURL, version string, values map[
 		}
 	}
 
+	// Check if already installed
+	histClient := action.NewHistory(actionConfig)
+	histClient.Max = 1
+	if _, err := histClient.Run(releaseName); err == driver.ErrReleaseNotFound {
+		fmt.Printf("📦 installing helm release %s in %s...\n", releaseName, namespace)
+		client := action.NewInstall(actionConfig)
+		client.ReleaseName = releaseName
+		client.Namespace = namespace
+		client.RepoURL = repoURL
+		client.Version = version
+		client.CreateNamespace = false // Handled above
+
+		cp, err := client.LocateChart(chartName, settings)
+		if err != nil { return err }
+		chartRequested, err := loader.Load(cp)
+		if err != nil { return err }
+		_, err = client.Run(chartRequested, values)
+		return err
+	}
+
+	fmt.Printf("📦 updating helm release %s in %s...\n", releaseName, namespace)
 	client := action.NewUpgrade(actionConfig)
-	client.Install = true
 	client.Namespace = namespace
 	client.RepoURL = repoURL
 	client.Version = version
+	client.Install = true
 
 	cp, err := client.LocateChart(chartName, settings)
-	if err != nil {
-		return err
-	}
-
+	if err != nil { return err }
 	chartRequested, err := loader.Load(cp)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("📦 ensuring helm release %s in %s...\n", releaseName, client.Namespace)
+	if err != nil { return err }
 	_, err = client.Run(releaseName, chartRequested, values)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func EnsureCASecretAndIssuer(cfg K8sConfig) error {
