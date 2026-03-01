@@ -1,0 +1,12 @@
+# Binaries
+bin/
+
+# Go dependencies
+vendor/
+
+# Test coverage
+coverage.out
+
+# IDEs
+.idea/
+.vscode/
