@@ -17,5 +17,8 @@
     "ui": {
         "inlineThinkingMode": "full",
         "showCitations": true
+    },
+    "model": {
+        "name": "gemini-3-flash-preview"
     }
 }
