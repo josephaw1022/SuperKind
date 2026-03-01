@@ -14,12 +14,14 @@ When a user asks to manage issues or pull requests, use the provided scripts in 
 ### Issues
 
 - **Create**: `scripts/create-issue.sh "Title" "Body"`
+- **Update**: `scripts/update-issue.sh <number> "Title" "Body"`
 - **View Details**: `scripts/view-issue.sh <number>`
 - **List All**: `scripts/list-issues.sh`
 
 ### Pull Requests
 
 - **Create**: `scripts/create-pr.sh "Title" "Body"`
+- **Update**: `scripts/update-pr.sh <number> "Title" "Body"`
 - **View Details**: `scripts/view-pr.sh <number>`
 - **List All**: `scripts/list-prs.sh`
 
