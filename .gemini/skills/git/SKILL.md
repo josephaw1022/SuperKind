@@ -15,6 +15,12 @@ To checkout the `main` branch and pull the latest changes, use:
 .gemini/skills/git/scripts/sync-main.sh
 ```
 
+### Updating the Current Branch
+To pull the latest changes for the current branch:
+```bash
+.gemini/skills/git/scripts/update.sh
+```
+
 ### Creating a New Branch
 To create and checkout a new branch:
 ```bash
