@@ -33,6 +33,7 @@ install: build
 	@echo "⚙️  Installing $(BINARY_NAME) to $(INSTALL_PATH)..."
 	cp $(BIN_DIR)/$(BINARY_NAME) $(INSTALL_PATH)
 	chmod +x $(INSTALL_PATH)
+	ln -sf $(BINARY_NAME) $(INSTALL_DIR)/sk
 
 	@echo "⚙️  Copying assets..."
 	cp -f src/fallback.yaml $(KIND_DIR)/
@@ -41,11 +42,8 @@ install: build
 		cp -r src/otel-plugin-extras $(KIND_DIR)/otel-plugin-extras; \
 	fi
 
-	@echo "🔗 Setting up aliases in $(BASHRC_D)/superkind.sh..."
-	@echo "alias qk='superkind'" > $(BASHRC_D)/superkind.sh
-	@echo "alias quick-kind='superkind'" >> $(BASHRC_D)/superkind.sh
-	@echo "alias kind-plugin='superkind plugin'" >> $(BASHRC_D)/superkind.sh
-	@echo "export PATH=\"\$$PATH:$(INSTALL_DIR)\"" >> $(BASHRC_D)/superkind.sh
+	@echo "🔗 Setting up PATH in $(BASHRC_D)/superkind.sh..."
+	@echo "export PATH=\"\$$PATH:$(INSTALL_DIR)\"" > $(BASHRC_D)/superkind.sh
 
 	@echo "✅ SuperKind installed successfully."
 	@echo "💡 Make sure your ~/.bashrc sources files in $(BASHRC_D):"
@@ -55,6 +53,7 @@ install: build
 uninstall:
 	@echo "🧹 Removing SuperKind files..."
 	rm -f $(INSTALL_PATH)
+	rm -f $(INSTALL_DIR)/sk
 	rm -f $(BASHRC_D)/superkind.sh
 	rm -rf $(KIND_PLUGIN_DIR)
 	@echo "✅ SuperKind uninstalled."

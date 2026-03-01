@@ -38,7 +38,7 @@ tasks:
     desc: Load the SimpleApi container image into the local kind cluster
     summary: Loads the SimpleApi container image into kind
     env:
-      KIND_CLUSTER_NAME: qk-quick-cluster
+      KIND_CLUSTER_NAME: sk-cluster
     cmds:
       - kind load docker-image ${CONTAINER_REPOSITORY}:${CONTAINER_IMAGE_TAG} --name ${KIND_CLUSTER_NAME}
 
@@ -47,6 +47,6 @@ tasks:
     desc: Deploy the SimpleApi application to the local kind cluster
     summary: Applies the Kubernetes manifests to the kind cluster
     env:
-      KUBECTL_CONTEXT: kind-qk-quick-cluster
+      KUBECTL_CONTEXT: kind-sk-cluster
     cmds:
       - kubectl apply -k . --context ${KUBECTL_CONTEXT}

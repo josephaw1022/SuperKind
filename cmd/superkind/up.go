@@ -81,6 +81,6 @@ var upCmd = &cobra.Command{
 }
 
 func init() {
-	upCmd.Flags().StringP("name", "n", "", "Cluster name (will be prefixed with qk-)")
+	upCmd.Flags().StringP("name", "n", "", "Cluster name (will be prefixed with sk-)")
 	rootCmd.AddCommand(upCmd)
 }

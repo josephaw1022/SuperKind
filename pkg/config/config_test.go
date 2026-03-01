@@ -8,12 +8,12 @@ import (
 func TestDefaultConfig(t *testing.T) {
 	cfg := DefaultConfig()
 
-	if cfg.NamePrefix != "qk-" {
-		t.Errorf("Expected NamePrefix qk-, got %s", cfg.NamePrefix)
+	if cfg.NamePrefix != "sk-" {
+		t.Errorf("Expected NamePrefix sk-, got %s", cfg.NamePrefix)
 	}
 
-	if cfg.DefaultBaseName != "quick-cluster" {
-		t.Errorf("Expected DefaultBaseName quick-cluster, got %s", cfg.DefaultBaseName)
+	if cfg.DefaultBaseName != "cluster" {
+		t.Errorf("Expected DefaultBaseName cluster, got %s", cfg.DefaultBaseName)
 	}
 
 	if cfg.LocalRegistryHostPort != "5001" {
@@ -23,7 +23,7 @@ func TestDefaultConfig(t *testing.T) {
 
 func TestConfigToEngineConfigs(t *testing.T) {
 	cfg := DefaultConfig()
-	clusterName := "qk-test"
+	clusterName := "sk-test"
 
 	pkiCfg := cfg.ToPKIConfig()
 	if !strings.HasSuffix(pkiCfg.CAKey, "rootCA.key") {

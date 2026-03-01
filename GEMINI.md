@@ -5,8 +5,8 @@ SuperKind is a Go-based, plugin-driven wrapper for [kind](https://kind.sigs.k8s.
 ## 🏗️ Core Architecture
 
 - **CLI Layer**: 
-    - `superkind` (alias: `qk`): A Go binary built with Cobra. Manages the lifecycle of SuperKind clusters (prefixed with `qk-`).
-    - **Native Plugins**: Integrated Go logic for modular extensions (ArgoCD, OTEL, KEDA, etc.), managed via `qk plugin`.
+    - `superkind` (alias: `sk`): A Go binary built with Cobra. Manages the lifecycle of SuperKind clusters (prefixed with `sk-`).
+    - **Native Plugins**: Integrated Go logic for modular extensions (ArgoCD, OTEL, KEDA, etc.), managed via `sk plugin`.
 - **Infrastructure Layer**:
     - **Kind SDK**: Orchestrates the underlying Kubernetes engine programmatically.
     - **Docker SDK**: Manages the local [Zot](https://zotregistry.dev/) registry (`localhost:5001`) and pull-through caching (`registry:2` instances).
@@ -14,7 +14,7 @@ SuperKind is a Go-based, plugin-driven wrapper for [kind](https://kind.sigs.k8s.
 - **Service Layer (Helm SDK)**:
     - **Ingress-NGINX**: Programmatically installed via Helm Go SDK.
     - **Kube-Prometheus-Stack**: Installed by default for observability.
-    - **Cert-Manager**: Manages internal TLS using the `quick-kind-ca` ClusterIssuer.
+    - **Cert-Manager**: Manages internal TLS using the `superkind-ca` ClusterIssuer.
 
 ## 🚀 Key Workflows
 
@@ -23,20 +23,20 @@ The project uses a `Makefile` for building and installation.
 ```bash
 make install
 ```
-*This builds the binary to `bin/superkind`, copies it to `~/.local/bin`, and sets up shell aliases in `~/.bashrc.d/superkind.sh`.*
+*This builds the binary to `bin/superkind`, copies it to `~/.local/bin`, and sets up the shell environment in `~/.bashrc.d/superkind.sh`.*
 
 ### 2. Cluster Management
-- **Create/Update**: `qk up` (creates `qk-quick-cluster`) or `qk up [name]`.
-- **Status**: `qk status [name]`.
-- **List**: `qk list` (lists only `qk-` prefixed clusters).
-- **Delete**: `qk delete [name]`.
+- **Create/Update**: `sk up` (creates `sk-cluster`) or `sk up [name]`.
+- **Status**: `sk status [name]`.
+- **List**: `sk list` (lists only `sk-` prefixed clusters).
+- **Delete**: `sk delete [name]`.
 
 ### 3. Plugin Management
 Plugins are implemented as Go structs satisfying the `Plugin` interface.
-- **List plugins**: `qk plugin` (no args).
-- **Install**: `qk plugin <name> install`.
-- **Status**: `qk plugin <name> status`.
-- **Uninstall**: `qk plugin <name> uninstall`.
+- **List plugins**: `sk plugin` (no args).
+- **Install**: `sk plugin <name> install`.
+- **Status**: `sk plugin <name> status`.
+- **Uninstall**: `sk plugin <name> uninstall`.
 
 ## 🛠️ Development Conventions
 
@@ -46,7 +46,7 @@ Plugins are implemented as Go structs satisfying the `Plugin` interface.
     - Every new feature or plugin MUST include unit tests in the same package.
     - Use `go test ./...` to verify the entire project.
 - **Registry Usage**: Always prefer the local Zot registry (`localhost:5001`) or the pull-through caches for speed and to avoid throttling.
-- **TLS**: Use the `quick-kind-ca` ClusterIssuer for all internal service certificates.
+- **TLS**: Use the `superkind-ca` ClusterIssuer for all internal service certificates.
 
 ## 📁 Key Directories & Files
 
@@ -61,4 +61,4 @@ Plugins are implemented as Go structs satisfying the `Plugin` interface.
 - **Go Version**: Requires Go 1.24+ for building.
 - **Docker**: Requires the Docker daemon to be running and the `docker` CLI or alias to be present for Kind compatibility.
 - **Shell Sourcing**: After `make install`, ensure `~/.bashrc` sources `~/.bashrc.d/*.sh`.
-- **Naming**: Only clusters starting with `qk-` are managed by SuperKind tools.
+- **Naming**: Only clusters starting with `sk-` are managed by SuperKind tools.

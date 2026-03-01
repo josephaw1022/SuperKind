@@ -30,24 +30,24 @@ type Config struct {
 
 func DefaultConfig() *Config {
 	home, _ := os.UserHomeDir()
-	caDir := filepath.Join(home, ".local/share/quick-kind/ca")
+	caDir := filepath.Join(home, ".local/share/superkind/ca")
 
 	return &Config{
-		NamePrefix:            "qk-",
-		DefaultBaseName:       "quick-cluster",
+		NamePrefix:            "sk-",
+		DefaultBaseName:       "cluster",
 		LocalRegistryName:     "local-registry",
 		LocalRegistryHostPort: "5001",
 		DockerHubCacheName:    "dockerhub-proxy-cache",
 		QuayCacheName:         "quay-proxy-cache",
 		GHCRCacheName:         "ghcr-proxy-cache",
 		MCRCacheName:          "mcr-proxy-cache",
-		CASecretName:          "quick-kind-ca",
-		CAIssuerName:          "quick-kind-ca",
+		CASecretName:          "superkind-ca",
+		CAIssuerName:          "superkind-ca",
 		CADir:                 caDir,
 		CAKey:                 filepath.Join(caDir, "rootCA.key"),
 		CACrt:                 filepath.Join(caDir, "rootCA.crt"),
-		CACN:                  "Quick Kind Local CA",
-		CAOrg:                 "Quick Kind",
+		CACN:                  "SuperKind Local CA",
+		CAOrg:                 "SuperKind",
 		CAOU:                  "Dev",
 		CADays:                3650,
 		PluginDir:             filepath.Join(home, ".kind/plugin"),

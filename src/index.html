@@ -51,7 +51,7 @@ metadata:
   name: myapp
   namespace: default
   annotations:
-    cert-manager.io/cluster-issuer: "quick-kind-ca"
+    cert-manager.io/cluster-issuer: "superkind-ca"
 spec:
   ingressClassName: nginx
   rules:
@@ -70,7 +70,7 @@ spec:
     - app.localhost
     secretName: app-localhost-tls</code></pre>
                 <p class="text-xs text-[#6C7B7F] mt-3">TLS is automatically signed by your local
-                    <code>quick-kind-ca</code> ClusterIssuer.</p>
+                    <code>superkind-ca</code> ClusterIssuer.</p>
             </div>
         </section>
 
@@ -83,7 +83,7 @@ spec:
             </p>
             <p class="text-sm text-[#4A585C] mb-4">
                 The Root CA file is located at:<br>
-                <code class="bg-[#F2F7F7] border border-[#D5E1E1] rounded px-1 py-0.5">/home/&lt;your-username&gt;/.local/share/quick-kind/ca/rootCA.crt</code>
+                <code class="bg-[#F2F7F7] border border-[#D5E1E1] rounded px-1 py-0.5">/home/&lt;your-username&gt;/.local/share/superkind/ca/rootCA.crt</code>
 
             </p>
 
@@ -93,7 +93,7 @@ spec:
                     1. Open your browser’s settings.<br>
                     2. Search for “Certificates” or “Manage Certificates”.<br>
                     3. Under “Authorities” or “Trusted Root Certificates”, click **Import**.<br>
-                    4. Select your <code>rootCA.crt</code> file from <code>~/.local/share/quick-kind/ca/</code>.<br>
+                    4. Select your <code>rootCA.crt</code> file from <code>~/.local/share/superkind/ca/</code>.<br>
                     5. Confirm trust for websites, then close and reopen your browser.
                 </p>
             </div>
@@ -116,21 +116,21 @@ spec:
             <div class="mt-4">
                 <h3 class="font-semibold text-sm text-[#0F6A6D] mb-1">Common Commands:</h3>
                 <pre class="bg-[#F2F7F7] border border-[#D5E1E1] rounded-lg p-3 text-sm overflow-auto"><code># Create or start the cluster
-qk up
+sk up
 
 # Show cluster status
-qk status
+sk status
 
 # Delete cluster
-qk --teardown
+sk delete
 
 # List all SuperKind clusters
-qk --list</code></pre>
+sk list</code></pre>
             </div>
 
             <div class="mt-4">
                 <h3 class="font-semibold text-sm text-[#0F6A6D] mb-1">Available Plugins:</h3>
-                <pre class="bg-[#F2F7F7] border border-[#D5E1E1] rounded-lg p-3 text-sm overflow-auto"><code>Usage: kind-plugin &lt;plugin&gt; [command] [args...]
+                <pre class="bg-[#F2F7F7] border border-[#D5E1E1] rounded-lg p-3 text-sm overflow-auto"><code>Usage: sk plugin &lt;plugin&gt; [command] [args...]
 
 Available plugins:
   - epinio
@@ -142,8 +142,8 @@ Available plugins:
   - velero
 
 Examples:
-  kind-plugin epinio install
-  kind-plugin olm status</code></pre>
+  sk plugin epinio install
+  sk plugin olm status</code></pre>
             </div>
         </section>
 
