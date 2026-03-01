@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -22,17 +23,45 @@ type ContainerEngine interface {
 }
 
 func GetContainerEngine() (ContainerEngine, error) {
-	if isCommandAvailable("podman") {
-		return &cliEngine{command: "podman"}, nil
+	cmd := GetContainerCommand()
+	if cmd == "" {
+		return nil, fmt.Errorf("neither podman nor docker CLI found or functional")
 	}
-	if isCommandAvailable("docker") {
-		return &cliEngine{command: "docker"}, nil
+	return &cliEngine{command: cmd}, nil
+}
+
+func GetContainerCommand() string {
+	// 1. Respect explicit environment variable first
+	if env := os.Getenv("KIND_EXPERIMENTAL_PROVIDER"); env != "" {
+		if isCommandFunctional(env) {
+			return env
+		}
 	}
-	return nil, fmt.Errorf("neither podman nor docker CLI found in PATH")
+
+	// 2. Check Podman
+	if isCommandFunctional("podman") {
+		return "podman"
+	}
+
+	// 3. Check Docker
+	if isCommandFunctional("docker") {
+		return "docker"
+	}
+
+	return ""
 }
 
 func isCommandAvailable(cmd string) bool {
 	_, err := exec.LookPath(cmd)
+	return err == nil
+}
+
+func isCommandFunctional(cmd string) bool {
+	if !isCommandAvailable(cmd) {
+		return false
+	}
+	// Run a simple command to verify the daemon is reachable and functional
+	err := exec.Command(cmd, "info").Run()
 	return err == nil
 }
 

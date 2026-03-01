@@ -17,13 +17,12 @@ type KindConfig struct {
 }
 
 func GetKindProvider() cluster.ProviderOption {
-	if isCommandAvailable("podman") {
-		return cluster.ProviderWithPodman()
-	}
-	if isCommandAvailable("docker") {
+	providerOpt, err := cluster.DetectNodeProvider()
+	if err != nil {
+		// Fallback to docker if detection fails
 		return cluster.ProviderWithDocker()
 	}
-	return cluster.ProviderWithDocker()
+	return providerOpt
 }
 
 func EnsureKindCluster(cfg KindConfig) error {
