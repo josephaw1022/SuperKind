@@ -5,6 +5,7 @@ toolName = "run_shell_command"
 commandPattern = '.*\.gemini/skills/.*/scripts/.*\.sh.*'
 decision = "allow"
 priority = 100
+modes = ["plan", "execute"]
 
 [[rule]]
 toolName = "run_shell_command"
@@ -12,3 +13,4 @@ toolName = "run_shell_command"
 commandPattern = '^scripts/.*/.*\.sh.*'
 decision = "allow"
 priority = 90
+modes = ["plan", "execute"]

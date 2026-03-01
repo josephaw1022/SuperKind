@@ -1,0 +1,25 @@
+[[rule]]
+toolName = "run_shell_command"
+# Explicitly allow skill scripts in Plan Mode
+commandPattern = '.*\.gemini/skills/.*/scripts/.*\.sh.*'
+decision = "allow"
+priority = 110
+modes = ["plan", "execute"]
+
+[[rule]]
+toolName = "run_shell_command"
+# Allow safe research commands in Plan Mode
+commandPrefix = [
+    "go version",
+    "go env",
+    "ls",
+    "pwd",
+    "git status",
+    "git log",
+    "git diff",
+    "gh issue view",
+    "gh pr view",
+]
+decision = "allow"
+priority = 120
+modes = ["plan", "execute"]
