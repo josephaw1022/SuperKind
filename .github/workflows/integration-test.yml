@@ -37,6 +37,8 @@ jobs:
       run: make build
 
     - name: Run SuperKind Up
+      env:
+        KIND_EXPERIMENTAL_PROVIDER: docker
       run: |
         # Run superkind up to verify cluster creation and infrastructure setup
         ./bin/superkind up
