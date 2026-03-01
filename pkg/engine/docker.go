@@ -22,13 +22,13 @@ type ContainerEngine interface {
 }
 
 func GetContainerEngine() (ContainerEngine, error) {
-	if isCommandAvailable("podman") {
-		return &cliEngine{command: "podman"}, nil
-	}
 	if isCommandAvailable("docker") {
 		return &cliEngine{command: "docker"}, nil
 	}
-	return nil, fmt.Errorf("neither podman nor docker CLI found in PATH")
+	if isCommandAvailable("podman") {
+		return &cliEngine{command: "podman"}, nil
+	}
+	return nil, fmt.Errorf("neither docker nor podman CLI found in PATH")
 }
 
 func isCommandAvailable(cmd string) bool {

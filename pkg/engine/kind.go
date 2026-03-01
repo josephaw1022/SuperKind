@@ -17,6 +17,9 @@ type KindConfig struct {
 }
 
 func GetKindProvider() cluster.ProviderOption {
+	if isCommandAvailable("docker") {
+		return cluster.ProviderWithDocker()
+	}
 	if isCommandAvailable("podman") {
 		return cluster.ProviderWithPodman()
 	}
