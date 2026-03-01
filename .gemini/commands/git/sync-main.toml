@@ -1,0 +1,10 @@
+description = "Syncs the local main branch with the remote repository."
+prompt = """
+Sync the current repository with the main branch.
+
+1. **Switch to Main:**
+   - Use the `git` skill: run `.gemini/skills/git/scripts/sync-main.sh`.
+
+2. **Confirmation:**
+   - Verify that the switch and pull were successful by running `git branch --show-current` and reporting the status.
+"""
