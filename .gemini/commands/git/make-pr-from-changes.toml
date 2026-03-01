@@ -1,0 +1,20 @@
+description = "Automates: checkout main, pull, create new branch from changes, and create PR using git/github skills."
+prompt = """
+Analyze the current changes and automate the PR creation process using the available `git` and `github` skills.
+
+1. **Information Gathering:**
+   - Use the `git` skill: run `.gemini/skills/git/scripts/status.sh` and `.gemini/skills/git/scripts/diff.sh`.
+   - If no changes are found, report it and stop.
+
+2. **Branch Management:**
+   - Propose a branch name based on the changes.
+   - Use the `git` skill to sync: run `.gemini/skills/git/scripts/sync-main.sh`.
+   - Use the `git` skill to branch: run `.gemini/skills/git/scripts/create-branch.sh <branch-name>`.
+
+3. **PR Creation:**
+   - Run `git add .` and `git commit -m "<suggested-commit-message>"`.
+   - Run `git push -u origin <branch-name>`.
+   - Use the `github` skill to create the PR: run `.gemini/skills/github/scripts/create-pr.sh "<suggested-pr-title>" "<suggested-pr-description>"`.
+
+Be surgical and careful. If changes are committed on another branch, explain how you will move them (e.g., rebase or cherry-pick) before proceeding.
+"""
