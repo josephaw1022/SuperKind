@@ -27,7 +27,7 @@ func EnsureLocalCA(cfg PKIConfig) error {
 	// Check if CA files exist and are not empty
 	if _, err := os.Stat(cfg.CAKey); err == nil {
 		if _, err := os.Stat(cfg.CACrt); err == nil {
-			fmt.Printf("🔐 Reusing existing local CA at %s\\n", cfg.CADir)
+			fmt.Printf("🔐 Reusing existing local CA at %s\n", cfg.CADir)
 			return nil
 		}
 	}
@@ -92,7 +92,7 @@ func EnsureLocalCA(cfg PKIConfig) error {
 		return fmt.Errorf("failed to encode certificate: %w", err)
 	}
 
-	fmt.Printf("✅ Root CA created: %s\\n", cfg.CACrt)
+	fmt.Printf("✅ Root CA created: %s\n", cfg.CACrt)
 	return nil
 }
 

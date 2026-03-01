@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/josephaw1022/superkind/pkg/config"
+	"github.com/josephaw1022/superkind/pkg/engine"
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/kind/pkg/cluster"
 )
@@ -17,18 +18,18 @@ var listCmd = &cobra.Command{
 		cfg := config.DefaultConfig()
 		prefix := cfg.NamePrefix
 
-		provider := cluster.NewProvider(cluster.ProviderWithDocker())
+		provider := cluster.NewProvider(engine.GetKindProvider())
 		clusters, err := provider.List()
 		if err != nil {
 			return fmt.Errorf("failed to list Kind clusters: %w", err)
 		}
 
-		fmt.Fprintf(cmd.OutOrStdout(), "📚 SuperKind clusters (prefixed '%s'):\\n", prefix)
+		fmt.Fprintf(cmd.OutOrStdout(), "📚 SuperKind clusters (prefixed '%s'):\n", prefix)
 		
 		found := false
 		for _, c := range clusters {
 			if strings.HasPrefix(c, prefix) {
-				fmt.Fprintf(cmd.OutOrStdout(), "  - %s\\n", c)
+				fmt.Fprintf(cmd.OutOrStdout(), "  - %s\n", c)
 				found = true
 			}
 		}

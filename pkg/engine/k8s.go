@@ -71,7 +71,7 @@ func EnsureRegistryConfigMap(cfg K8sConfig) error {
 			Namespace: "kube-public",
 		},
 		Data: map[string]string{
-			"localRegistryHosting.v1": fmt.Sprintf("host: \"localhost:%s\"\\nhelp: \"https://kind.sigs.k8s.io/docs/user/local-registry/\"\\n", cfg.LocalRegistryHostPort),
+			"localRegistryHosting.v1": fmt.Sprintf("host: \"localhost:%s\"\nhelp: \"https://kind.sigs.k8s.io/docs/user/local-registry/\"\n", cfg.LocalRegistryHostPort),
 		},
 	}
 
@@ -183,7 +183,7 @@ func RunHelmInstall(releaseName, chartName, repoURL, version string, values map[
 		return err
 	}
 
-	fmt.Printf("📦 ensuring helm release %s in %s...\\n", releaseName, client.Namespace)
+	fmt.Printf("📦 ensuring helm release %s in %s...\n", releaseName, client.Namespace)
 	_, err = client.Run(releaseName, chartRequested, values)
 	if err != nil {
 		return err
@@ -228,10 +228,10 @@ func EnsureCASecretAndIssuer(cfg K8sConfig) error {
 
 	_, err = clientset.CoreV1().Secrets("cert-manager").Get(context.TODO(), cfg.CASecretName, metav1.GetOptions{})
 	if err != nil {
-		fmt.Printf("📦 creating CA secret %s...\\n", cfg.CASecretName)
+		fmt.Printf("📦 creating CA secret %s...\n", cfg.CASecretName)
 		_, err = clientset.CoreV1().Secrets("cert-manager").Create(context.TODO(), secret, metav1.CreateOptions{})
 	} else {
-		fmt.Printf("✅ CA secret '%s' already exists; updating...\\n", cfg.CASecretName)
+		fmt.Printf("✅ CA secret '%s' already exists; updating...\n", cfg.CASecretName)
 		_, err = clientset.CoreV1().Secrets("cert-manager").Update(context.TODO(), secret, metav1.UpdateOptions{})
 	}
 	if err != nil {
@@ -257,10 +257,10 @@ func EnsureCASecretAndIssuer(cfg K8sConfig) error {
 
 	_, err = dynClient.Resource(issuerGVR).Get(context.TODO(), cfg.CAIssuerName, metav1.GetOptions{})
 	if err != nil {
-		fmt.Printf("📦 creating ClusterIssuer %s...\\n", cfg.CAIssuerName)
+		fmt.Printf("📦 creating ClusterIssuer %s...\n", cfg.CAIssuerName)
 		_, err = dynClient.Resource(issuerGVR).Create(context.TODO(), issuer, metav1.CreateOptions{})
 	} else {
-		fmt.Printf("✅ ClusterIssuer '%s' already exists; updating...\\n", cfg.CAIssuerName)
+		fmt.Printf("✅ ClusterIssuer '%s' already exists; updating...\n", cfg.CAIssuerName)
 		res, _ := dynClient.Resource(issuerGVR).Get(context.TODO(), cfg.CAIssuerName, metav1.GetOptions{})
 		issuer.SetResourceVersion(res.GetResourceVersion())
 		_, err = dynClient.Resource(issuerGVR).Update(context.TODO(), issuer, metav1.UpdateOptions{})

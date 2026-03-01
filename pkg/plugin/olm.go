@@ -15,7 +15,7 @@ func (p *OLMPlugin) Name() string {
 }
 
 func (p *OLMPlugin) Install() error {
-	fmt.Printf("🚀 Installing OLM %s (Go SDK)...\\n", p.Version)
+	fmt.Printf("🚀 Installing OLM %s (Go SDK)...\n", p.Version)
 	
 	// For OLM, we'll use the quickstart YAMLs as it's the most reliable way in Go
 	// without re-implementing their install script logic.

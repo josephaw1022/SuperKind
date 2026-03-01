@@ -108,7 +108,7 @@ func (p *OTelPlugin) Install() error {
 		_, err = dynClient.Resource(collectorGVR).Namespace(p.ObservabilityNS).Create(context.TODO(), collector, metav1.CreateOptions{})
 	}
 
-	fmt.Printf("✅ OpenTelemetry orchestration initiated. Aspire: https://%s\\n", p.AspireHost)
+	fmt.Printf("✅ OpenTelemetry orchestration initiated. Aspire: https://%s\n", p.AspireHost)
 	return nil
 }
 

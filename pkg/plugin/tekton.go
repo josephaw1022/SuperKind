@@ -72,7 +72,7 @@ func (p *TektonPlugin) Install() error {
 	}
 
 	// 3. Setup Ingress
-	fmt.Printf("✅ Tekton installation orchestrated. Dashboard: https://%s\\n", p.IngressHost)
+	fmt.Printf("✅ Tekton installation orchestrated. Dashboard: https://%s\n", p.IngressHost)
 	return nil
 }
 

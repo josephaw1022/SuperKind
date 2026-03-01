@@ -24,55 +24,55 @@ var upCmd = &cobra.Command{
 			clusterName = cfg.NamePrefix + nameFlag
 		}
 
-		fmt.Printf("🚀 Starting SuperKind for cluster: %s\\n", clusterName)
+		fmt.Printf("🚀 Starting SuperKind for cluster: %s\n", clusterName)
 
 		if err := engine.EnsureLocalCA(cfg.ToPKIConfig()); err != nil {
-			fmt.Printf("❌ %v\\n", err)
+			fmt.Printf("❌ %v\n", err)
 			os.Exit(1)
 		}
 
 		if err := engine.EnsureLocalRegistry(cfg.ToDockerConfig()); err != nil {
-			fmt.Printf("❌ %v\\n", err)
+			fmt.Printf("❌ %v\n", err)
 			os.Exit(1)
 		}
 
 		if err := engine.EnsurePullThroughCaches(cfg.ToDockerConfig()); err != nil {
-			fmt.Printf("❌ %v\\n", err)
+			fmt.Printf("❌ %v\n", err)
 			os.Exit(1)
 		}
 
 		if err := engine.EnsureKindCluster(cfg.ToKindConfig(clusterName)); err != nil {
-			fmt.Printf("❌ %v\\n", err)
+			fmt.Printf("❌ %v\n", err)
 			os.Exit(1)
 		}
 
 		if err := engine.ConfigureKindNodes(cfg.ToKindConfig(clusterName)); err != nil {
-			fmt.Printf("❌ %v\\n", err)
+			fmt.Printf("❌ %v\n", err)
 			os.Exit(1)
 		}
 
 		if err := engine.EnsureRegistryConfigMap(cfg.ToK8sConfig(clusterName)); err != nil {
-			fmt.Printf("❌ %v\\n", err)
+			fmt.Printf("❌ %v\n", err)
 			os.Exit(1)
 		}
 
 		if err := engine.EnsureCertManager(); err != nil {
-			fmt.Printf("❌ %v\\n", err)
+			fmt.Printf("❌ %v\n", err)
 			os.Exit(1)
 		}
 
 		if err := engine.EnsureCASecretAndIssuer(cfg.ToK8sConfig(clusterName)); err != nil {
-			fmt.Printf("❌ %v\\n", err)
+			fmt.Printf("❌ %v\n", err)
 			os.Exit(1)
 		}
 
 		if err := engine.EnsureIngressNginx(); err != nil {
-			fmt.Printf("❌ %v\\n", err)
+			fmt.Printf("❌ %v\n", err)
 			os.Exit(1)
 		}
 
 		if err := engine.EnsurePrometheusStack(); err != nil {
-			fmt.Printf("❌ %v\\n", err)
+			fmt.Printf("❌ %v\n", err)
 			os.Exit(1)
 		}
 

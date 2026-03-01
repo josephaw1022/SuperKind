@@ -52,7 +52,7 @@ func (m *PluginManager) RunPlugin(name string, args []string) error {
 		}
 		fallthrough
 	default:
-		fmt.Printf("Unknown action: %s\\n", action)
+		fmt.Printf("Unknown action: %s\n", action)
 		fmt.Println(p.Help())
 		return nil
 	}

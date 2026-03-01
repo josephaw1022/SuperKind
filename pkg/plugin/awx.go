@@ -74,7 +74,7 @@ func (p *AWXPlugin) Install() error {
 		_, err = dynClient.Resource(awxGVR).Namespace(p.Namespace).Create(context.TODO(), awx, metav1.CreateOptions{})
 	}
 
-	fmt.Printf("✅ AWX orchestration initiated. URL: https://%s\\n", p.Host)
+	fmt.Printf("✅ AWX orchestration initiated. URL: https://%s\n", p.Host)
 	return nil
 }
 
@@ -92,7 +92,7 @@ func (p *AWXPlugin) Password() error {
 	if err != nil {
 		return fmt.Errorf("failed to get AWX admin password: %w", err)
 	}
-	fmt.Printf("🔑 AWX Admin Password: %s\\n", string(secret.Data["password"]))
+	fmt.Printf("🔑 AWX Admin Password: %s\n", string(secret.Data["password"]))
 	return nil
 }
 

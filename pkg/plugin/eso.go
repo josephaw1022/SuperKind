@@ -16,7 +16,7 @@ func (p *ESOPlugin) Name() string {
 }
 
 func (p *ESOPlugin) Install() error {
-	fmt.Printf("🚀 Installing External Secrets Operator v%s (Go SDK)...\\n", p.ChartVersion)
+	fmt.Printf("🚀 Installing External Secrets Operator v%s (Go SDK)...\n", p.ChartVersion)
 	values := map[string]interface{}{
 		"installCRDs": true,
 	}

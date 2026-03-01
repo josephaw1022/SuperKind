@@ -16,10 +16,17 @@ type KindConfig struct {
 	MCRCacheName          string
 }
 
-func EnsureKindCluster(cfg KindConfig) error {
-	fmt.Printf("▶ creating kind cluster '%s' (if needed)...\\n", cfg.ClusterName)
+func GetKindProvider() cluster.ProviderOption {
+	if isCommandAvailable("podman") {
+		return cluster.ProviderWithPodman()
+	}
+	return cluster.ProviderWithDocker()
+}
 
-	provider := cluster.NewProvider(cluster.ProviderWithDocker())
+func EnsureKindCluster(cfg KindConfig) error {
+	fmt.Printf("▶ creating kind cluster '%s' (if needed)...\n", cfg.ClusterName)
+
+	provider := cluster.NewProvider(GetKindProvider())
 
 	clusters, err := provider.List()
 	if err != nil {
@@ -28,7 +35,7 @@ func EnsureKindCluster(cfg KindConfig) error {
 
 	for _, c := range clusters {
 		if c == cfg.ClusterName {
-			fmt.Printf("… cluster already exists; skipping create.\\n")
+			fmt.Printf("… cluster already exists; skipping create.\n")
 			return nil
 		}
 	}
@@ -82,14 +89,14 @@ nodes:
 }
 
 func ConfigureKindNodes(cfg KindConfig) error {
-	provider := cluster.NewProvider(cluster.ProviderWithDocker())
+	provider := cluster.NewProvider(GetKindProvider())
 	nodes, err := provider.ListNodes(cfg.ClusterName)
 	if err != nil {
 		return fmt.Errorf("failed to list kind nodes: %w", err)
 	}
 
 	for _, node := range nodes {
-		fmt.Printf("🔧 patching containerd mirrors on %s\\n", node.String())
+		fmt.Printf("🔧 patching containerd mirrors on %s\n", node.String())
 
 		dirs := []string{
 			fmt.Sprintf("localhost:%s", cfg.LocalRegistryHostPort),

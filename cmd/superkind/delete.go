@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/josephaw1022/superkind/pkg/config"
+	"github.com/josephaw1022/superkind/pkg/engine"
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/kind/pkg/cluster"
 )
@@ -23,14 +24,14 @@ var deleteCmd = &cobra.Command{
 			clusterName = cfg.NamePrefix + nameFlag
 		}
 
-		fmt.Printf("🧹 Deleting kind cluster '%s'...\\n", clusterName)
-		provider := cluster.NewProvider(cluster.ProviderWithDocker())
+		fmt.Printf("🧹 Deleting kind cluster '%s'...\n", clusterName)
+		provider := cluster.NewProvider(engine.GetKindProvider())
 		if err := provider.Delete(clusterName, ""); err != nil {
-			fmt.Printf("⚠️  Cluster not found or deletion failed: %v\\n", err)
+			fmt.Printf("⚠️  Cluster not found or deletion failed: %v\n", err)
 		} else {
-			fmt.Printf("✅ Cluster '%s' deleted.\\n", clusterName)
+			fmt.Printf("✅ Cluster '%s' deleted.\n", clusterName)
 		}
-		fmt.Printf("ℹ️  Leaving local registry & caches running (for speed).\\n")
+		fmt.Printf("ℹ️  Leaving local registry & caches running (for speed).\n")
 	},
 }
 

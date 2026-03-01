@@ -18,7 +18,7 @@ func (p *EpinioPlugin) Name() string {
 }
 
 func (p *EpinioPlugin) Install() error {
-	fmt.Printf("🚀 Installing Epinio in namespace %s (Go SDK)...\\n", p.Namespace)
+	fmt.Printf("🚀 Installing Epinio in namespace %s (Go SDK)...\n", p.Namespace)
 	values := map[string]interface{}{
 		"global": map[string]interface{}{
 			"domain": p.Domain,

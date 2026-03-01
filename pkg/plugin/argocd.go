@@ -114,7 +114,7 @@ func (p *ArgoCDPlugin) Install() error {
 		return err
 	}
 
-	fmt.Printf("✅ Argo CD ready at https://%s\\n", p.Host)
+	fmt.Printf("✅ Argo CD ready at https://%s\n", p.Host)
 	return nil
 }
 

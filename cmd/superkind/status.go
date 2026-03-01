@@ -1,14 +1,12 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/client"
 	"github.com/josephaw1022/superkind/pkg/config"
+	"github.com/josephaw1022/superkind/pkg/engine"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/cli"
@@ -29,10 +27,10 @@ var statusCmd = &cobra.Command{
 			clusterName = cfg.NamePrefix + nameFlag
 		}
 
-		fmt.Printf("🔍 Checking status for: %s\\n", clusterName)
+		fmt.Printf("🔍 Checking status for: %s\n", clusterName)
 
 		// Kind check
-		provider := cluster.NewProvider(cluster.ProviderWithDocker())
+		provider := cluster.NewProvider(engine.GetKindProvider())
 		clusters, _ := provider.List()
 		running := false
 		for _, c := range clusters {
@@ -43,49 +41,44 @@ var statusCmd = &cobra.Command{
 		}
 
 		if !running {
-			fmt.Printf("❌ Kind cluster '%s' not found.\\n", clusterName)
-			return
+			fmt.Printf("❌ Kind cluster '%s' not found.\n", clusterName)
+		} else {
+			fmt.Printf("✅ Kind cluster '%s' is running.\n", clusterName)
 		}
-		fmt.Printf("✅ Kind cluster '%s' is running.\\n", clusterName)
 
-		// Docker check
-		ctx := context.Background()
-		cliDocker, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+		// Docker/Podman check
+		engineInstance, err := engine.GetContainerEngine()
 		if err == nil {
-			defer cliDocker.Close()
-			fmt.Printf("\\n🗄️  Local registry & caches (docker ps):\\n")
-			containers := map[string]bool{
-				cfg.LocalRegistryName:  true,
-				cfg.DockerHubCacheName: true,
-				cfg.QuayCacheName:      true,
-				cfg.GHCRCacheName:      true,
-				cfg.MCRCacheName:       true,
+			fmt.Printf("\n🗄️  Local registry & caches status:\n")
+			containers := []string{
+				cfg.LocalRegistryName,
+				cfg.DockerHubCacheName,
+				cfg.QuayCacheName,
+				cfg.GHCRCacheName,
+				cfg.MCRCacheName,
 			}
 			
-			list, _ := cliDocker.ContainerList(ctx, types.ContainerListOptions{All: true})
-			fmt.Printf("%-25s %-20s %-30s\\n", "NAMES", "STATUS", "PORTS")
-			for _, ctr := range list {
-				for _, name := range ctr.Names {
-					trimmedName := name[1:] // Remove leading slash
-					if containers[trimmedName] {
-						fmt.Printf("%-25s %-20s %-30v\\n", trimmedName, ctr.Status, ctr.Ports)
-						break
-					}
+			fmt.Printf("%-25s %-20s\n", "NAMES", "STATUS")
+			for _, name := range containers {
+				status := "Stopped/Missing"
+				if engineInstance.IsContainerRunning(name) {
+					status = "Running"
 				}
+				fmt.Printf("%-25s %-20s\n", name, status)
 			}
 		}
 
 		// Helm check
-		fmt.Printf("\\n🔍 Helm releases:\\n")
+		fmt.Printf("\n🔍 Helm releases:\n")
 		settings := cli.New()
 		actionConfig := new(action.Configuration)
 		if err := actionConfig.Init(settings.RESTClientGetter(), settings.Namespace(), os.Getenv("HELM_DRIVER"), log.Printf); err == nil {
 			listAction := action.NewList(actionConfig)
 			listAction.AllNamespaces = true
 			releases, _ := listAction.Run()
-			fmt.Printf("%-25s %-20s %-25s %-15s\\n", "NAME", "NAMESPACE", "CHART", "STATUS")
+			fmt.Printf("%-25s %-20s %-25s %-15s\n", "NAME", "NAMESPACE", "CHART", "STATUS")
 			for _, rel := range releases {
-				fmt.Printf("%-25s %-20s %-25s %-15s\\n", rel.Name, rel.Namespace, rel.Chart.Metadata.Name, rel.Info.Status)
+				fmt.Printf("%-25s %-20s %-25s %-15s\n", rel.Name, rel.Namespace, rel.Chart.Metadata.Name, rel.Info.Status)
 			}
 		}
 	},

@@ -20,9 +20,9 @@ var pluginCmd = &cobra.Command{
 				return fmt.Errorf("failed to list plugins: %w", err)
 			}
 			for _, p := range plugins {
-				fmt.Fprintf(cmd.OutOrStdout(), "  - %s\\n", p)
+				fmt.Fprintf(cmd.OutOrStdout(), "  - %s\n", p)
 			}
-			fmt.Fprintln(cmd.OutOrStdout(), "\\nExamples:")
+			fmt.Fprintln(cmd.OutOrStdout(), "\nExamples:")
 			fmt.Fprintln(cmd.OutOrStdout(), "  superkind plugin epinio install")
 			fmt.Fprintln(cmd.OutOrStdout(), "  superkind plugin olm status")
 			return nil

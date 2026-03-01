@@ -124,7 +124,7 @@ func (p *KyvernoPlugin) Install() error {
 		return err
 	}
 
-	fmt.Printf("✅ Kyverno installed. Policy Reporter: https://%s\\n", p.PolicyReporterHost)
+	fmt.Printf("✅ Kyverno installed. Policy Reporter: https://%s\n", p.PolicyReporterHost)
 	return nil
 }
 

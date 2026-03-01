@@ -4,7 +4,6 @@ go 1.24.2
 
 require (
 	github.com/docker/docker v24.0.9+incompatible
-	github.com/docker/go-connections v0.4.0
 	github.com/spf13/cobra v1.10.2
 	helm.sh/helm/v3 v3.14.4
 	k8s.io/api v0.29.0
@@ -36,6 +35,7 @@ require (
 	github.com/docker/cli v24.0.6+incompatible // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
+	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect

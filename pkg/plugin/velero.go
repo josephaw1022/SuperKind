@@ -40,7 +40,7 @@ func (p *VeleroPlugin) Install() error {
 		clientset.CoreV1().Namespaces().Create(context.TODO(), &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: p.Namespace}}, metav1.CreateOptions{})
 	}
 
-	creds := fmt.Sprintf("[default]\\naws_access_key_id=%s\\naws_secret_access_key=%s", p.MinioUser, p.MinioPass)
+	creds := fmt.Sprintf("[default]\naws_access_key_id=%s\naws_secret_access_key=%s", p.MinioUser, p.MinioPass)
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "cloud-credentials",
@@ -125,7 +125,7 @@ func (p *VeleroPlugin) Install() error {
 		return err
 	}
 
-	fmt.Printf("✅ Velero installed. UI: https://%s\\n", p.UIHost)
+	fmt.Printf("✅ Velero installed. UI: https://%s\n", p.UIHost)
 	return nil
 }
 
