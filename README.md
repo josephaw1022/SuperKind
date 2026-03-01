@@ -47,39 +47,41 @@ cd SuperKind
 make install
 ```
 
-This builds the `superkind` binary, installs it to `~/.local/bin`, and sets up your shell environment (alias: `qk`).
+This builds the `superkind` binary, installs it to `~/.local/bin`, and sets up your shell environment (alias: `sk`).
 
 ---
 
 ## ⚙️ Commands Overview
 
-| Command                | Description                                                        |
-| ---------------------- | ------------------------------------------------------------------ |
-| `qk`                   | Show help or status of the default cluster                         |
-| `qk up`                | Create or update the default cluster (`qk-quick-cluster`)          |
-| `qk up [name]`         | Create a new cluster named `qk-[name]`                             |
-| `qk status [name]`     | Show status of `qk-[name]`                                         |
-| `qk delete [name]`     | Delete `qk-[name]`                                                 |
-| `qk list`              | List all SuperKind clusters (prefixed with `qk-`)                  |
-| `qk plugin`            | Manage native Go plugins (install, status, uninstall)              |
+You can use either `superkind` or the shorter `sk` alias.
+
+| Command                        | Description                                                        |
+| ------------------------------ | ------------------------------------------------------------------ |
+| `sk`                           | Show help or status of the default cluster                         |
+| `sk up`                       | Create or update the default cluster (`sk-cluster`)                |
+| `sk up [name]`                | Create a new cluster named `sk-[name]`                             |
+| `sk status [name]`            | Show status of `sk-[name]`                                         |
+| `sk delete [name]`            | Delete `sk-[name]`                                                 |
+| `sk list`                     | List all SuperKind clusters (prefixed with `sk-`)                  |
+| `sk plugin`                   | Manage native Go plugins (install, status, uninstall)              |
 
 ### 🧩 Example session
 
 ```bash
-# Create a new cluster named qk-dev
-qk up dev
+# Create a new cluster named sk-dev
+sk up dev
 
 # Install ArgoCD via native Go plugin
-qk plugin argocd install
+sk plugin argocd install
 
 # Check cluster status
-qk status dev
+sk status dev
 
 # List all SuperKind clusters
-qk list
+sk list
 
 # Delete the cluster
-qk delete dev
+sk delete dev
 ```
 
 ---
@@ -117,4 +119,4 @@ Everything is modular, idempotent, and executed via Go code.
 
 ## ✅ Summary
 
-Run `qk up` to spin up clusters, `qk list` to list them, and `qk delete` to clean them up — all locally, fast, and fully automated.
+Run `sk up` to spin up clusters, `sk list` to list them, and `sk delete` to clean them up — all locally, fast, and fully automated.

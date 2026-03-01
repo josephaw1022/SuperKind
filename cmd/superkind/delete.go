@@ -11,7 +11,7 @@ import (
 
 var deleteCmd = &cobra.Command{
 	Use:     "delete [name]",
-	Aliases: []string{"teardown"},
+	Aliases: []string{"teardown", "down"},
 	Short:   "Delete a SuperKind cluster",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := config.DefaultConfig()

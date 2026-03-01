@@ -10,7 +10,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "superkind",
 	Short: "SuperKind is a super-charged Kind wrapper with local registries and CA.",
-	Long: `SuperKind (qk) is an opinionated, plugin-based wrapper for kind (Kubernetes in Docker). 
+	Long: `SuperKind is an opinionated, plugin-based wrapper for kind (Kubernetes in Docker). 
 It automates the setup of essential infrastructure like Ingress, Cert-Manager, Registries, and Caching.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Default behavior: show help or status

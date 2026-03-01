@@ -98,13 +98,13 @@ func EnsureLocalCA(cfg PKIConfig) error {
 
 func DefaultPKIConfig() PKIConfig {
 	home, _ := os.UserHomeDir()
-	caDir := filepath.Join(home, ".local/share/quick-kind/ca")
+	caDir := filepath.Join(home, ".local/share/superkind/ca")
 	return PKIConfig{
 		CADir:  caDir,
 		CAKey:  filepath.Join(caDir, "rootCA.key"),
 		CACrt:  filepath.Join(caDir, "rootCA.crt"),
-		CACN:   "Quick Kind Local CA",
-		CAOrg:  "Quick Kind",
+		CACN:   "SuperKind Local CA",
+		CAOrg:  "SuperKind",
 		CAOU:   "Dev",
 		CADays: 3650,
 	}
