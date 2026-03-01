@@ -93,6 +93,7 @@ func EnsureCertManager() error {
 		"cert-manager",
 		"https://charts.jetstack.io",
 		"v1.15.3",
+		"cert-manager",
 		map[string]interface{}{
 			"installCRDs": true,
 		},
@@ -105,6 +106,7 @@ func EnsureIngressNginx() error {
 		"ingress-nginx",
 		"https://kubernetes.github.io/ingress-nginx",
 		"4.11.2",
+		"ingress-nginx",
 		map[string]interface{}{
 			"controller": map[string]interface{}{
 				"ingressClassResource": map[string]interface{}{
@@ -128,6 +130,7 @@ func EnsurePrometheusStack() error {
 		"kube-prometheus-stack",
 		"https://prometheus-community.github.io/helm-charts",
 		"61.7.0",
+		"kube-system",
 		map[string]interface{}{
 			"prometheus": map[string]interface{}{
 				"prometheusSpec": map[string]interface{}{},
@@ -139,19 +142,8 @@ func EnsurePrometheusStack() error {
 	)
 }
 
-func RunHelmInstall(releaseName, chartName, repoURL, version string, values map[string]interface{}) error {
+func RunHelmInstall(releaseName, chartName, repoURL, version string, namespace string, values map[string]interface{}) error {
 	settings := cli.New()
-
-	namespace := settings.Namespace()
-	if releaseName == "cert-manager" {
-		namespace = "cert-manager"
-	} else if releaseName == "ingress-nginx" {
-		namespace = "ingress-nginx"
-	} else if releaseName == "prometheus" {
-		namespace = "kube-system"
-	} else if releaseName == "metrics-server" {
-		namespace = "kube-system"
-	}
 
 	actionConfig := new(action.Configuration)
 	if err := actionConfig.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), log.Printf); err != nil {

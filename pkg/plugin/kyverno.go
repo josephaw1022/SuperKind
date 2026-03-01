@@ -33,6 +33,7 @@ func (p *KyvernoPlugin) Install() error {
 		"kyverno",
 		"https://kyverno.github.io/kyverno",
 		p.ChartVersion,
+		p.Namespace,
 		nil,
 	)
 	if err != nil {
@@ -46,6 +47,7 @@ func (p *KyvernoPlugin) Install() error {
 		"kyverno-policies",
 		"https://kyverno.github.io/kyverno",
 		p.PoliciesVersion,
+		p.Namespace,
 		nil,
 	)
 	if err != nil {
@@ -118,6 +120,7 @@ func (p *KyvernoPlugin) Install() error {
 		"policy-reporter",
 		"https://kyverno.github.io/policy-reporter",
 		"",
+		p.PolicyReporterNamespace,
 		prValues,
 	)
 	if err != nil {

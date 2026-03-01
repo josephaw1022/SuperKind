@@ -108,6 +108,7 @@ func (p *ArgoCDPlugin) Install() error {
 		"argo-cd",
 		"https://argoproj.github.io/argo-helm",
 		p.ChartVersion,
+		p.Namespace,
 		values,
 	)
 	if err != nil {

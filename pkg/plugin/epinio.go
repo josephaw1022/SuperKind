@@ -35,6 +35,7 @@ func (p *EpinioPlugin) Install() error {
 		"epinio",
 		"https://epinio.github.io/helm-charts",
 		p.ChartVersion,
+		p.Namespace,
 		values,
 	)
 }

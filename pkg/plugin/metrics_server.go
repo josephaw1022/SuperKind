@@ -37,6 +37,7 @@ func (p *MetricsServerPlugin) Install() error {
 		"metrics-server",
 		"https://kubernetes-sigs.github.io/metrics-server/",
 		"3.12.1",
+		"kube-system",
 		values,
 	)
 }

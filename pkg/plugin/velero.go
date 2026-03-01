@@ -92,6 +92,7 @@ func (p *VeleroPlugin) Install() error {
 		"velero",
 		"https://vmware-tanzu.github.io/helm-charts",
 		p.ChartVersion,
+		p.Namespace,
 		veleroValues,
 	)
 	if err != nil {
@@ -119,6 +120,7 @@ func (p *VeleroPlugin) Install() error {
 		"velero-ui",
 		"https://helm.otwld.com/",
 		"",
+		p.UINamespace,
 		uiValues,
 	)
 	if err != nil {

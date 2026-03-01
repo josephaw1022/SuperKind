@@ -32,6 +32,7 @@ func (p *AWXPlugin) Install() error {
 		"awx-operator",
 		"https://ansible-community.github.io/awx-operator-helm/",
 		p.ChartVersion,
+		p.Namespace,
 		nil,
 	)
 	if err != nil {

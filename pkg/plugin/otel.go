@@ -52,6 +52,7 @@ func (p *OTelPlugin) Install() error {
 		"opentelemetry-operator",
 		"https://open-telemetry.github.io/opentelemetry-helm-charts",
 		p.ChartVersion,
+		p.Namespace,
 		otelValues,
 	)
 	if err != nil {

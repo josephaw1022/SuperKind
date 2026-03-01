@@ -22,6 +22,7 @@ func (p *KEDAPlugin) Install() error {
 		"keda",
 		"https://kedacore.github.io/charts",
 		p.ChartVersion,
+		p.Namespace,
 		nil,
 	)
 }

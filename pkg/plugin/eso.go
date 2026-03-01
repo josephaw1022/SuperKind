@@ -25,6 +25,7 @@ func (p *ESOPlugin) Install() error {
 		"external-secrets",
 		"https://charts.external-secrets.io",
 		p.ChartVersion,
+		p.Namespace,
 		values,
 	)
 }

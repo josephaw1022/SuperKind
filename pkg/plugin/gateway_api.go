@@ -22,6 +22,7 @@ func (p *GatewayAPIPlugin) Install() error {
 		"gateway-api",
 		"https://charts.appscode.com/stable/",
 		p.ChartVersion,
+		p.Namespace,
 		nil,
 	)
 }
