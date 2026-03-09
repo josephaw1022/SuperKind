@@ -5,7 +5,7 @@ set -euo pipefail
 # Usage: ./create-issue.sh "Title" "Body"
 
 if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 "Title" "Body""
+    echo "Usage: $0 \"Title\" \"Body\""
     exit 1
 fi
 

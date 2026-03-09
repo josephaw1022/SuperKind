@@ -12,35 +12,35 @@ This skill provides a set of scripts for common Git workflows.
 ### Syncing with Main
 To checkout the `main` branch and pull the latest changes, use:
 ```bash
-.gemini/skills/git/scripts/sync-main.sh
+.agents/skills/git/scripts/sync-main.sh
 ```
 
 ### Updating the Current Branch
 To pull the latest changes for the current branch:
 ```bash
-.gemini/skills/git/scripts/update.sh
+.agents/skills/git/scripts/update.sh
 ```
 
 ### Creating a New Branch
 To create and checkout a new branch:
 ```bash
-.gemini/skills/git/scripts/create-branch.sh <branch-name>
+.agents/skills/git/scripts/create-branch.sh <branch-name>
 ```
 
 ### Checking Out a Branch
 To checkout an existing branch:
 ```bash
-.gemini/skills/git/scripts/checkout.sh <branch-name>
+.agents/skills/git/scripts/checkout.sh <branch-name>
 ```
 
 ### Viewing Differences
 To see the changes in the current branch:
 ```bash
-.gemini/skills/git/scripts/diff.sh
+.agents/skills/git/scripts/diff.sh
 ```
 
 ### Checking Status
 To see the current status of the repository:
 ```bash
-.gemini/skills/git/scripts/status.sh
+.agents/skills/git/scripts/status.sh
 ```

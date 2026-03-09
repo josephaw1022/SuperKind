@@ -1,15 +1,15 @@
 [[rule]]
 toolName = "run_shell_command"
-# This pattern matches any shell command that calls a script within the .gemini/skills directory
+# This pattern matches any shell command that calls a script within the .agents/skills directory
 # It handles both absolute and relative paths, and allows for script arguments.
-commandPattern = '.*\.gemini/skills/.*/scripts/.*\.sh.*'
+commandPattern = '.*\.agents/skills/.*/scripts/.*\.sh.*'
 decision = "allow"
 priority = 100
 modes = ["plan", "execute"]
 
 [[rule]]
 toolName = "run_shell_command"
-# A fallback for scripts called without the .gemini/skills prefix if they are in a scripts/ folder
+# A fallback for scripts called without the .agents/skills prefix if they are in a scripts/ folder
 commandPattern = '^scripts/.*/.*\.sh.*'
 decision = "allow"
 priority = 90

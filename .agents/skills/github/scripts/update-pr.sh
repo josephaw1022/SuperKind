@@ -2,10 +2,10 @@
 set -euo pipefail
 
 # Update a GitHub pull request
-# Usage: ./update-pr.sh <number> "Title" "Body"
+# Usage: ./update-pr.sh <number> \"Title\" \"Body\"
 
 if [ "$#" -ne 3 ]; then
-    echo "Usage: $0 <number> "Title" "Body""
+    echo "Usage: $0 <number> \"Title\" \"Body\""
     exit 1
 fi
 
