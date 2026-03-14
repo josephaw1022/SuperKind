@@ -194,6 +194,23 @@ func RunHelmInstall(releaseName, chartName, repoURL, version string, namespace s
 	return err
 }
 
+func RunHelmUninstall(releaseName, namespace string) error {
+	settings := cli.New()
+
+	actionConfig := new(action.Configuration)
+	if err := actionConfig.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), log.Printf); err != nil {
+		return err
+	}
+
+	client := action.NewUninstall(actionConfig)
+	fmt.Printf("🧹 uninstalling helm release %s in %s...\n", releaseName, namespace)
+	_, err := client.Run(releaseName)
+	if err != nil && err != driver.ErrReleaseNotFound {
+		return err
+	}
+	return nil
+}
+
 func EnsureCASecretAndIssuer(cfg K8sConfig) error {
 	clientset, dynClient, err := GetClients()
 	if err != nil {
