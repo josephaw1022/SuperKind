@@ -74,6 +74,7 @@ func DefaultPluginManager() *PluginManager {
 	m.RegisterGoPlugin(NewEpinioPlugin())
 	m.RegisterGoPlugin(NewAWXPlugin())
 	m.RegisterGoPlugin(NewGatewayAPIPlugin())
+	m.RegisterGoPlugin(NewVPAPlugin())
 	// We will register other plugins here as we implement them
 	return m
 }
