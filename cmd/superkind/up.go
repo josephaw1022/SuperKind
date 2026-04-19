@@ -76,6 +76,11 @@ var upCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		if err := engine.EnsureFallbackUI(cfg.ToK8sConfig(clusterName)); err != nil {
+			fmt.Printf("❌ %v\n", err)
+			os.Exit(1)
+		}
+
 		fmt.Println("✅ SuperKind cluster is ready!")
 	},
 }

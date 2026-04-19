@@ -52,7 +52,7 @@ metadata:
   name: fallback-ui
   namespace: fallback-ui
   annotations:
-    cert-manager.io/cluster-issuer: "quick-kind-ca"
+    cert-manager.io/cluster-issuer: "superkind-ca"
 spec:
   ingressClassName: nginx
   rules:
